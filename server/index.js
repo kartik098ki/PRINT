@@ -12,22 +12,33 @@ app.use(express.json());
 
 // 1. REGISTER USER
 app.post('/api/register', (req, res) => {
+    console.log('[POST] /api/register', req.body);
     const { name, email, password, role } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+    }
     const normalizedEmail = email.toLowerCase().trim();
     const id = 'user_' + Buffer.from(normalizedEmail).toString('base64').substring(0, 10);
 
     const sql = `INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)`;
     db.run(sql, [id, name, normalizedEmail, password, role || 'user'], function (err) {
         if (err) {
+            console.error('Register Error:', err.message);
             return res.status(400).json({ error: 'Email already exists' });
         }
+        console.log('User registered:', normalizedEmail);
         res.json({ id, name, email: normalizedEmail, role: role || 'user' });
     });
 });
 
 // 2. LOGIN USER
 app.post('/api/login', (req, res) => {
+    console.log('[POST] /api/login', req.body);
     const { email, password, role } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+    }
 
     // Vendor Hardcoded Check (Case Insensitive)
     if (role === 'vendor') {
@@ -35,6 +46,7 @@ app.post('/api/login', (req, res) => {
         const vendorEmail = 'kartikguleria12@gmail.com';
 
         if (normalizedEmail === vendorEmail && password === 'kk@123') {
+            console.log('Vendor login success:', vendorEmail);
             return res.json({
                 id: 'vendor_admin',
                 name: 'Kartik Guleria',
@@ -42,16 +54,24 @@ app.post('/api/login', (req, res) => {
                 role: 'vendor'
             });
         } else {
-            return res.status(401).json({ error: 'Invalid Vendor API Key' });
+            console.warn('Vendor login failed for:', normalizedEmail);
+            return res.status(401).json({ error: 'Invalid Vendor Credentials' });
         }
     }
 
     // Normal DB Login
     const sql = `SELECT * FROM users WHERE email = ? AND password = ?`;
     db.get(sql, [email.toLowerCase().trim(), password], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(401).json({ error: 'Invalid credentials' });
+        if (err) {
+            console.error('Login DB Error:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        if (!row) {
+            console.warn('Login failed: Invalid credentials for', email);
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
 
+        console.log('User login success:', row.email);
         res.json({
             id: row.id,
             name: row.name,
@@ -63,6 +83,7 @@ app.post('/api/login', (req, res) => {
 
 // 3. GET ORDERS (For Vendor Dashboard & User History)
 app.get('/api/orders', (req, res) => {
+    // console.log('[GET] /api/orders', req.query); // Optional verbose log
     const { userId } = req.query; // Optional filter
 
     let sql = `SELECT * FROM orders ORDER BY created_at DESC`;
@@ -74,14 +95,22 @@ app.get('/api/orders', (req, res) => {
     }
 
     db.all(sql, params, (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        // Parse JSON fields
-        const orders = rows.map(o => ({
-            ...o,
-            files: JSON.parse(o.files || '[]'),
-            settings: JSON.parse(o.settings || '{}')
-        }));
-        res.json(orders);
+        if (err) {
+            console.error('Get Orders Error:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        try {
+            // Parse JSON fields
+            const orders = rows.map(o => ({
+                ...o,
+                files: JSON.parse(o.files || '[]'),
+                settings: JSON.parse(o.settings || '{}')
+            }));
+            res.json(orders);
+        } catch (parseError) {
+            console.error('JSON Parse Error in orders:', parseError);
+            res.status(500).json({ error: 'Data corruption detected in order history' });
+        }
     });
 });
 

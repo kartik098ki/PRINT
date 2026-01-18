@@ -18,17 +18,12 @@ export default function Login() {
         setError('');
         setIsLoading(true);
         try {
-            // Smart Role Detection
-            const targetRole = email.trim().toLowerCase() === 'kartikguleria12@gmail.com' ? 'vendor' : 'user';
-
+            // STRICTLY Student Login Only
+            const targetRole = 'user';
             const user = await login(email, password, targetRole);
 
-            // Redirect based on role
-            if (user.role === 'vendor') {
-                navigate('/vendor');
-            } else {
-                navigate('/');
-            }
+            // Redirect to home if successful
+            navigate('/');
         } catch (err) {
             setError('Invalid email or password');
         } finally {
