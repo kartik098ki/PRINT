@@ -21,11 +21,15 @@ export default function Order() {
 
     const handlePay = async () => {
         setIsProcessing(true);
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Fake network delay
-        const order = placeOrder();
-        setCompletedOrder(order);
-        setIsProcessing(false);
-        setStep(3);
+        try {
+            const otp = await placeOrder(total);
+            setCompletedOrder({ otp });
+            setStep(3);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     // Auto-scroll to top on step change
@@ -51,7 +55,7 @@ export default function Order() {
                     <div className="text-5xl font-mono font-bold text-gray-900 tracking-[0.2em]">{completedOrder.otp}</div>
                 </div>
 
-                <Link to="/" className="btn bg-gray-900 text-white w-full max-w-xs py-4 rounded-xl text-lg font-medium">
+                <Link to="/" className="w-full max-w-xs bg-gray-900 text-white font-bold py-4 rounded-xl text-lg hover:bg-black transition-colors shadow-lg">
                     Back to Home
                 </Link>
             </div>
@@ -62,11 +66,172 @@ export default function Order() {
         <div className="min-h-screen bg-gray-50 pb-32">
             {/* Header */}
             <div className="bg-white sticky top-0 z-40 px-4 py-4 border-b border-gray-100 flex items-center gap-4">
-                <button onClick={() => step === 1 ? navigate('/') : setStep(step - 1)} className="p-2 hover:bg-gray-100 rounded-full">
+                <button onClick={() => step === 1 ? navigate('/') : setStep(step - 1)} className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors">
+                    <ArrowLeft size={24} />
                 </button>
+                <div>
+                    <h1 className="font-bold text-lg">{step === 1 ? 'Upload Files' : 'Print Settings'}</h1>
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Step {step} of 2</p>
+                </div>
+            </div>
+
+            <div className="container max-w-lg mx-auto p-4">
+                <AnimatePresence mode='wait'>
+                    {step === 1 ? (
+                        <motion.div
+                            key="step1"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="space-y-6"
+                        >
+                            <div className="border-2 border-dashed border-primary/30 bg-primary/5 rounded-2xl p-8 text-center relative overflow-hidden group hover:bg-primary/10 transition-colors">
+                                <input
+                                    type="file"
+                                    multiple
+                                    onChange={(e) => Array.from(e.target.files).forEach(addFile)}
+                                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-primary shadow-sm group-hover:scale-110 transition-transform">
+                                    <Upload size={32} />
+                                </div>
+                                <h3 className="font-bold text-lg mb-1 text-gray-900">Tap to Upload</h3>
+                                <p className="text-sm text-gray-500">PDF, JPG, PNG supported</p>
+                            </div>
+
+                            <div className="space-y-3">
+                                {currentOrder.files.map((file) => (
+                                    <div key={file.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+                                            {file.type.startsWith('image/') ? <FileImage size={20} /> : <File size={20} />}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-medium truncate text-sm text-gray-900">{file.name}</p>
+                                            <p className="text-xs text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                        </div>
+                                        <button onClick={() => removeFile(file.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {hasFiles && (
+                                    <div className="text-center pt-2">
+                                        <p className="text-xs text-gray-400">{currentOrder.files.length} files selected</p>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="step2"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="space-y-6"
+                        >
+                            {/* Settings Cards */}
+                            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="font-medium text-gray-700">Color Mode</span>
+                                    <div className="flex bg-gray-100 p-1 rounded-lg">
+                                        <button
+                                            onClick={() => updateSettings('color', false)}
+                                            className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", !currentOrder.settings.color ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
+                                        >B&W</button>
+                                        <button
+                                            onClick={() => updateSettings('color', true)}
+                                            className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", currentOrder.settings.color ? "bg-white shadow-sm text-purple-600" : "text-gray-500 hover:text-gray-700")}
+                                        >Color</button>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center">
+                                    <span className="font-medium text-gray-700">Sides</span>
+                                    <div className="flex bg-gray-100 p-1 rounded-lg">
+                                        <button
+                                            onClick={() => updateSettings('doubleSided', false)}
+                                            className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", !currentOrder.settings.doubleSided ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
+                                        >Single</button>
+                                        <button
+                                            onClick={() => updateSettings('doubleSided', true)}
+                                            className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", currentOrder.settings.doubleSided ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
+                                        >Double</button>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
+                                    <span className="font-medium text-gray-700">Copies</span>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => updateSettings('copies', Math.max(1, currentOrder.settings.copies - 1))}
+                                            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 transition-colors"
+                                        >-</button>
+                                        <span className="font-bold w-6 text-center text-gray-900">{currentOrder.settings.copies}</span>
+                                        <button
+                                            onClick={() => updateSettings('copies', Math.max(1, currentOrder.settings.copies + 1))}
+                                            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 transition-colors"
+                                        >+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Bill Details */}
+                            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                                <h3 className="font-bold text-sm text-gray-900">Bill Details</h3>
+                                <div className="flex justify-between text-sm text-gray-500">
+                                    <span>File Count</span>
+                                    <span>{currentOrder.files.length}</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-gray-500">
+                                    <span>Rate per page</span>
+                                    <span>₹{currentOrder.settings.color ? '10' : '2'}</span>
+                                </div>
+                                <div className="border-t border-dashed border-gray-200 my-2"></div>
+                                <div className="flex justify-between font-bold text-lg text-gray-900">
+                                    <span>To Pay</span>
+                                    <span>₹{total}</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-blue-50 p-4 rounded-xl flex items-center gap-3 text-blue-700 text-sm font-medium border border-blue-100">
+                                <CreditCard size={20} className="shrink-0" />
+                                <span className="text-xs">Secure Mock Payment Gateway. No real money is deducted.</span>
+                            </div>
+                        </motion.div>
                     )}
+                </AnimatePresence>
+            </div>
+
+            {/* Bottom Action Bar */}
+            <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 p-4 pb-6 z-50">
+                <div className="container max-w-lg mx-auto">
+                    {step === 1 ? (
+                        <button
+                            onClick={handleNext}
+                            disabled={!hasFiles}
+                            className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 disabled:opacity-50 disabled:shadow-none flex items-center justify-between px-6 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                        >
+                            <span>{hasFiles ? `${currentOrder.files.length} Files` : 'Select Files'}</span>
+                            <span className="flex items-center gap-2">Next <ChevronRight size={20} /></span>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handlePay}
+                            disabled={isProcessing}
+                            className="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-600/20 flex items-center justify-between px-6 disabled:opacity-70 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                        >
+                            <div className="flex flex-col items-start leading-none">
+                                <span className="text-[10px] opacity-80 font-bold tracking-wider">TOTAL</span>
+                                <span>₹{total}</span>
+                            </div>
+                            <span className="flex items-center gap-2">
+                                {isProcessing ? <Loader2 className="animate-spin" size={24} /> : 'Pay & Print'}
+                                {!isProcessing && <ChevronRight size={20} />}
+                            </span>
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
-        </div >
     );
 }
