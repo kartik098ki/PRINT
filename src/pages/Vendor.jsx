@@ -81,7 +81,7 @@ export default function Vendor() {
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h1 className="font-bold text-lg leading-tight tracking-tight">JPRINT Admin<span className="text-orange-500">.</span></h1>
+                                <h1 className="font-bold text-lg leading-tight tracking-tight">JPRINT Admin v5.1<span className="text-orange-500">.</span></h1>
                                 <span className="bg-green-100 text-green-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse" /> Live
                                 </span>
