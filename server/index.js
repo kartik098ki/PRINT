@@ -29,13 +29,16 @@ app.post('/api/register', (req, res) => {
 app.post('/api/login', (req, res) => {
     const { email, password, role } = req.body;
 
-    // Vendor Hardcoded Check (for extra security layer, though we could move to DB)
+    // Vendor Hardcoded Check (Case Insensitive)
     if (role === 'vendor') {
-        if (email === 'kartikguleria12@gmail.com' && password === 'kk@123') {
+        const normalizedEmail = email.toLowerCase().trim();
+        const vendorEmail = 'kartikguleria12@gmail.com';
+
+        if (normalizedEmail === vendorEmail && password === 'kk@123') {
             return res.json({
                 id: 'vendor_admin',
                 name: 'Kartik Guleria',
-                email: email,
+                email: vendorEmail,
                 role: 'vendor'
             });
         } else {

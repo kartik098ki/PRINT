@@ -44,6 +44,32 @@ export default function Vendor() {
     const pendingOrdersCount = queueOrders.length;
     const completedOrdersCount = completedOrders.length;
 
+    // Protection Logic
+    const { user } = useAuth();
+    useEffect(() => {
+        if (!user || user.role !== 'vendor') {
+            // Optional: Redirect or just show access denied
+            // navigate('/vendor-login'); // Uncomment to auto-redirect
+        }
+    }, [user, navigate]);
+
+    if (!user || user.role !== 'vendor') {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+                    <Shield size={32} />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+                <p className="text-gray-500 mb-6 max-w-md">
+                    You do not have permission to view the Vendor Dashboard. Please log in with an Administrator account.
+                </p>
+                <Link to="/vendor-login" className="px-6 py-3 bg-black text-white rounded-xl font-bold hover:bg-gray-800 transition-colors">
+                    Go to Vendor Login
+                </Link>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20 font-sans text-gray-900 selection:bg-orange-500 selection:text-white">
             {/* Header */}
