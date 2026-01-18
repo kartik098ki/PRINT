@@ -11,6 +11,7 @@ export default function Order() {
     const [step, setStep] = useState(1); // 1: Upload, 2: Settings, 3: Success
     const [isProcessing, setIsProcessing] = useState(false);
     const [completedOrder, setCompletedOrder] = useState(null);
+    const [debugError, setDebugError] = useState(null); // New state for on-screen debugging
 
     const total = calculateTotal();
     const hasFiles = currentOrder.files.length > 0;
@@ -27,13 +28,15 @@ export default function Order() {
                 setCompletedOrder({ otp: result.otp });
                 setStep(3);
             } else {
+                setDebugError(`Order failed: ${result?.error || "Unknown Error"}`);
                 alert(`Order failed: ${result?.error || "Please check if the Backend Server is running."}`);
             }
         } catch (e) {
             console.error(e);
-            alert("Something went wrong. Please try again.");
+            setDebugError(`CRITICAL ERROR: ${e.message}\n\nSTACK: ${e.stack}`);
+            alert(`CRITICAL ERROR:\n\n${e.message}\n\nSee screen for details.`);
         } finally {
-            setIsProcessing(false);
+            setIsProcessingPayment(false);
         }
     };
 
@@ -237,6 +240,24 @@ export default function Order() {
                     )}
                 </div>
             </div>
+
+            {/* Debug Overlay */}
+            {debugError && (
+                <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4">
+                    <div className="bg-white p-6 rounded-xl max-w-lg w-full overflow-auto max-h-[80vh]">
+                        <h3 className="text-red-600 font-bold text-xl mb-4">Debug Error</h3>
+                        <pre className="text-xs bg-gray-100 p-4 rounded overflow-auto whitespace-pre-wrap font-mono select-all">
+                            {debugError}
+                        </pre>
+                        <button
+                            onClick={() => setDebugError(null)}
+                            className="mt-4 w-full bg-gray-900 text-white py-3 rounded-lg font-bold"
+                        >
+                            Close & Retry
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

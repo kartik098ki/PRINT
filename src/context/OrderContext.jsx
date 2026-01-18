@@ -140,8 +140,8 @@ export const OrderProvider = ({ children }) => {
             }
         } catch (err) {
             console.error("Place Order Error:", err);
-            setIsProcessingPayment(false);
-            return { success: false, error: err.message };
+            // Re-throw so the UI can display the stack trace
+            throw err;
         }
     };
 
