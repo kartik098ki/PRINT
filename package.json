@@ -7,7 +7,8 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "client": "vite",
     "server": "cd server && npm start",
-    "build": "vite build",
+    "build": "npm install && cd server && npm install && cd .. && vite build",
+    "start": "cd server && npm start",
     "lint": "eslint .",
     "preview": "vite preview"
   },

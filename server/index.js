@@ -3,10 +3,20 @@ const cors = require('cors');
 const db = require('./db');
 
 const app = express();
-const PORT = 5001;
+const PORT = process.env.PORT || 5002;
 
 app.use(cors());
 app.use(express.json());
+
+// DEBUG LOGGER
+app.use((req, res, next) => {
+    console.log(`[REQUEST] ${req.method} ${req.url}`);
+    next();
+});
+
+// Serve Static Frontend (Vite Build)
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // --- ROUTES ---
 
@@ -167,6 +177,13 @@ app.patch('/api/orders/:id', (req, res) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true, id, status });
     });
+});
+
+// 100. Catch-All Route (Last Resort)
+// Using Regex because Express 5 path-to-regexp is strict about '*'
+app.get(/.*/, (req, res) => {
+    console.log('Catch-all hit for:', req.url);
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {

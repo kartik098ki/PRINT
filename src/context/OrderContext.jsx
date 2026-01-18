@@ -121,11 +121,19 @@ export const OrderProvider = ({ children }) => {
 
         try {
             console.log("Sending Order Data:", orderData);
+
             const response = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
             });
+
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                const text = await response.text();
+                console.error("Received non-JSON response:", text.substring(0, 100)); // Log first 100 chars
+                throw new Error("Backend not reachable (Received HTML instead of JSON). Are you on Netlify? Netlify only hosts the frontend.");
+            }
 
             const result = await response.json();
 
