@@ -94,9 +94,9 @@ export default function Home() {
           </div>
           <span>Upload</span>
         </Link>
-        <Link to={user?.role === 'vendor' ? "/vendor" : "/vendor-login"} className="flex flex-col items-center gap-1 hover:text-gray-900 transition-colors">
+        <Link to={user?.role === 'vendor' ? "/vendor" : (user ? "/profile" : "/login")} className="flex flex-col items-center gap-1 hover:text-gray-900 transition-colors">
           <User size={24} />
-          <span>{user?.role === 'vendor' ? 'Admin' : 'Vendor'}</span>
+          <span>{user?.role === 'vendor' ? 'Admin' : (user ? 'Account' : 'Profile')}</span>
         </Link>
       </div>
 
