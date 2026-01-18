@@ -1,10 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, User, Zap, FileText, Image, PenTool, BookOpen, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
 export default function Home() {
   const { user } = useAuth();
+  const navigate = useNavigate(); // Add navigate hook
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-28 font-sans text-gray-900 selection:bg-black selection:text-white">
@@ -40,19 +41,19 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Balance Card (Coming Soon) */}
-          <div className="mb-4 bg-gray-900 rounded-2xl p-4 text-white flex items-center justify-between shadow-lg shadow-gray-200" onClick={() => alert("Wallet Feature Coming Soon!")}>
+          {/* Premium Membership Banner (New Feature) */}
+          <div className="mb-4 bg-gray-900 rounded-2xl p-4 text-white flex items-center justify-between shadow-lg shadow-gray-200" onClick={() => navigate('/profile')}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                <TrendingUp size={20} className="text-green-400" />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 flex items-center justify-center text-black font-bold">
+                <Sparkles size={20} />
               </div>
               <div>
-                <p className="text-xs text-gray-400 font-medium">J-Wallet Balance</p>
-                <h3 className="text-xl font-bold tracking-tight">₹ --.--</h3>
+                <h3 className="text-sm font-bold tracking-tight">J-Premium Member</h3>
+                <p className="text-[10px] text-gray-400 font-medium">Get priority printing & discounts</p>
               </div>
             </div>
-            <span className="bg-white/10 text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-wider text-green-300">
-              Coming Soon
+            <span className="bg-white/10 text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider text-white border border-white/20">
+              Join Now
             </span>
           </div>
 
@@ -105,10 +106,10 @@ export default function Home() {
             </h3>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-            <CategoryPill icon={<Zap size={18} />} label="Instant" active />
-            <CategoryPill icon={<PenTool size={18} />} label="Stationery" />
-            <CategoryPill icon={<FileText size={18} />} label="Docs" />
-            <CategoryPill icon={<Image size={18} />} label="Posters" />
+            <Link to="/order"><CategoryPill icon={<Zap size={18} />} label="Instant" active /></Link>
+            <Link to="/order"><CategoryPill icon={<PenTool size={18} />} label="Stationery" /></Link>
+            <Link to="/order"><CategoryPill icon={<FileText size={18} />} label="Docs" /></Link>
+            <Link to="/order"><CategoryPill icon={<Image size={18} />} label="Posters" /></Link>
           </div>
         </section>
 
