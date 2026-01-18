@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const OrderContext = createContext();
 
 export const useOrder = () => useContext(OrderContext);
 
 export const OrderProvider = ({ children }) => {
+    const { user } = useAuth();
     const [orders, setOrders] = useState(() => {
         const saved = localStorage.getItem('jprint_orders');
         return saved ? JSON.parse(saved) : [];
@@ -19,6 +21,8 @@ export const OrderProvider = ({ children }) => {
         },
         status: 'draft', // draft, paid, printed, collected
     });
+
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
     useEffect(() => {
         localStorage.setItem('jprint_orders', JSON.stringify(orders));
@@ -94,6 +98,8 @@ export const OrderProvider = ({ children }) => {
                 const newOtp = generateUniqueOtp(latestOrders);
                 const newOrder = {
                     id: Date.now().toString(),
+                    userId: user?.id || 'guest',
+                    userEmail: user?.email || 'Guest',
                     files: currentOrder.files,
                     settings: currentOrder.settings,
                     totalAmount: amount,
@@ -108,21 +114,17 @@ export const OrderProvider = ({ children }) => {
                 setOrders(updatedOrders);
                 localStorage.setItem('jprint_orders', JSON.stringify(updatedOrders));
 
-                // Dispatch manual storage event for THIS tab (since event listener only catches OTHER tabs)
-                // This isn't strictly necessary for React state but good for consistency
-
                 setIsProcessingPayment(false);
                 setCurrentOrder({ files: [], settings: { copies: 1, color: false, doubleSided: false } }); // Reset
                 resolve(newOtp);
-            }, 1000);
+            }, 1000); // Simulate payment delay
         });
     };
+
     const calculateTotal = () => {
         // Pricing Mock: 
         // B/W: 2 rs per page
         // Color: 10 rs per page
-        // We don't verify page count, assume 1 page per file for MVP logic or random. 
-        // Let's assume 1 page per file for simplicity unless we parse PDF.
         const baseRate = currentOrder.settings.color ? 10 : 2;
         const items = currentOrder.files.length;
         const copies = currentOrder.settings.copies;
@@ -140,11 +142,15 @@ export const OrderProvider = ({ children }) => {
     };
 
     const markAsPrinted = (orderId) => {
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'printed' } : o));
+        const updated = orders.map(o => o.id === orderId ? { ...o, status: 'printed' } : o);
+        setOrders(updated);
+        localStorage.setItem('jprint_orders', JSON.stringify(updated));
     };
 
     const markAsCollected = (orderId) => {
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'collected' } : o));
+        const updated = orders.map(o => o.id === orderId ? { ...o, status: 'collected' } : o);
+        setOrders(updated);
+        localStorage.setItem('jprint_orders', JSON.stringify(updated));
     };
 
     return (

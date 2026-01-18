@@ -211,6 +211,7 @@ function OrderCard({ order, onPrint, onCollect }) {
                     </div>
                     <div>
                         <h3 className="font-bold text-gray-900">Order #{order.id}</h3>
+                        <p className="text-[10px] text-gray-500 font-medium mb-1">{order.userEmail || 'Guest'}</p>
                         <div className="flex items-center gap-2 mt-1">
                             <StatusBadge status={order.status} />
                             <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded font-bold">Paid ₹{order.totalAmount}</span>

@@ -18,8 +18,8 @@ export default function Profile() {
     // Mock Wallet Balance
     const walletBalance = 150;
 
-    // Filter orders (showing all for this local MVP)
-    const myOrders = orders;
+    // Filter orders by User ID
+    const myOrders = orders.filter(o => o.userId === user?.id);
 
     return (
         <div className="min-h-screen bg-gray-50 pb-24 font-sans text-gray-900">

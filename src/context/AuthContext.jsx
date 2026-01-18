@@ -19,41 +19,65 @@ export const AuthProvider = ({ children }) => {
     }, [user]);
 
     const login = (email, password, role = 'user') => {
-        // Mock Logic
         return new Promise((resolve, reject) => {
             setTimeout(() => {
+                // STRICT VENDOR CHECK
+                if (role === 'vendor') {
+                    if (email === 'kartikguleria12@gmail.com' && password === 'kk@123') {
+                        const vendorUser = {
+                            id: 'vendor_admin',
+                            name: 'Kartik Guleria',
+                            email: email,
+                            role: 'vendor'
+                        };
+                        setUser(vendorUser);
+                        resolve(vendorUser);
+                        return;
+                    } else {
+                        reject('Invalid Admin Credentials');
+                        return;
+                    }
+                }
+
+                // Normal User Login
                 if (email && password) {
+                    // Create consistent ID from email so data persists across logins
+                    const userId = 'user_' + btoa(email).substring(0, 10);
+
                     const newUser = {
-                        id: 'u_' + Math.floor(Math.random() * 1000),
+                        id: userId,
                         email,
                         name: email.split('@')[0],
-                        role
+                        role: 'user'
                     };
                     setUser(newUser);
                     resolve(newUser);
                 } else {
                     reject('Invalid credentials');
                 }
-            }, 1000);
+            }, 800);
         });
     };
 
     const register = (name, email, password, role = 'user', vendorKey = '') => {
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (role === 'vendor' && vendorKey !== 'JIIT128') {
-                    return reject('Invalid Vendor Access Key');
-                }
+            // Block public vendor registration
+            if (role === 'vendor') {
+                reject("Vendor registration is closed. Please use Admin Login.");
+                return;
+            }
 
+            setTimeout(() => {
+                const userId = 'user_' + btoa(email).substring(0, 10);
                 const newUser = {
-                    id: 'u_' + Math.floor(Math.random() * 1000),
+                    id: userId,
                     email,
                     name,
                     role
                 };
                 setUser(newUser);
                 resolve(newUser);
-            }, 1000);
+            }, 800);
         });
     };
 
