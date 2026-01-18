@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useOrder } from '../context/OrderContext';
-import { Search, CheckCircle, Clock, Download, Printer, Check, X, Bell, RefreshCw, TrendingUp, FileText, User } from 'lucide-react';
+import { Search, CheckCircle, Clock, Download, Printer, Check, X, Bell, RefreshCw, TrendingUp, FileText, User, LogOut, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Vendor() {
     const { orders, verifyOrderOtp, markAsPrinted, markAsCollected } = useOrder();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
     const [otpInput, setOtpInput] = useState('');
     const [verificationResult, setVerificationResult] = useState(null);
     const [activeTab, setActiveTab] = useState('queue'); // queue, completed
@@ -23,8 +26,13 @@ export default function Vendor() {
             setTimeout(() => setVerificationResult(null), 3000);
         } else {
             setVerificationResult({ success: false, message: 'Invalid OTP' });
-            setTimeout(() => setVerificationResult(null), 3000);
+            setTimeout(() => setVerificationResult(null), 2000);
         }
+    };
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
     };
 
     const queueOrders = orders.filter(o => o.status === 'paid' || o.status === 'printed');
@@ -37,112 +45,142 @@ export default function Vendor() {
     const completedOrdersCount = completedOrders.length;
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 pb-20 font-sans text-gray-900 selection:bg-orange-500 selection:text-white">
             {/* Header */}
-            <div className="bg-white border-b border-gray-100 p-4 sticky top-0 z-30 shadow-sm">
-                <div className="container mx-auto max-w-4xl flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
-                            <Printer size={20} strokeWidth={2.5} />
+            <div className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-30 shadow-sm/50 backdrop-blur-md bg-white/80">
+                <div className="container mx-auto max-w-5xl flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center shadow-lg shadow-black/20">
+                            <Shield size={20} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <div>
-                                <h1 className="font-bold text-lg leading-tight">JIIT 128 Print Admin</h1>
-                                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Campus Link Active
-                                </p>
+                            <div className="flex items-center gap-2">
+                                <h1 className="font-bold text-lg leading-tight tracking-tight">JPRINT Admin<span className="text-orange-500">.</span></h1>
+                                <span className="bg-green-100 text-green-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse" /> Live
+                                </span>
                             </div>
+                            <p className="text-[10px] text-gray-400 font-medium">JIIT SECTOR 128 • LOGGED IN</p>
                         </div>
                     </div>
-                    <Link to="/" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                        <User size={20} className="text-gray-600" />
-                    </Link>
+                    <button onClick={handleLogout} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-red-600">
+                        <LogOut size={20} />
+                    </button>
                 </div>
             </div>
 
-            <div className="container mx-auto max-w-4xl p-4 space-y-6">
+            <div className="container mx-auto max-w-5xl p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-3 gap-4">
-                    <StatCard label="Earnings" value={`₹${totalEarnings}`} icon={<TrendingUp size={16} />} color="text-green-600 bg-green-50" />
-                    <StatCard label="Pending" value={pendingOrdersCount} icon={<Clock size={16} />} color="text-orange-600 bg-orange-50" />
-                    <StatCard label="Done" value={completedOrdersCount} icon={<CheckCircle size={16} />} color="text-blue-600 bg-blue-50" />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* OTP Verifier - Main Focus */}
+                    <div className="md:col-span-1 bg-black text-white rounded-3xl p-6 shadow-xl shadow-black/10 relative overflow-hidden">
+                        <div className="relative z-10">
+                            <h2 className="text-lg font-bold mb-1">Verify Order</h2>
+                            <p className="text-white/50 text-xs mb-6 font-medium">Enter 4-digit student code</p>
 
-                {/* OTP Input Card */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <form onSubmit={handleVerify} className="max-w-md mx-auto text-center">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 block">Quick Verify</label>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                placeholder="0 0 0 0"
-                                value={otpInput}
-                                onChange={(e) => setOtpInput(e.target.value)}
-                                maxLength={4}
-                                className="flex-1 bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-center text-3xl font-mono tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-bold text-gray-900 placeholder:text-gray-300"
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="mt-4 w-full bg-primary text-primary-foreground font-bold py-3 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
-                            disabled={otpInput.length !== 4}
-                        >
-                            Verify Code
-                        </button>
+                            <form onSubmit={handleVerify}>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="0 0 0 0"
+                                        value={otpInput}
+                                        onChange={(e) => setOtpInput(e.target.value)}
+                                        maxLength={4}
+                                        className="w-full bg-white/10 border border-white/10 rounded-2xl py-4 px-4 text-center text-3xl font-mono tracking-[0.4em] focus:outline-none focus:bg-white/20 transition-all font-bold placeholder:text-white/20"
+                                    />
+                                </div>
 
-                        <AnimatePresence>
-                            {verificationResult && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0 }}
-                                    className={clsx(
-                                        "mt-4 p-3 rounded-xl font-bold flex items-center justify-center gap-2",
-                                        verificationResult.success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                                <AnimatePresence>
+                                    {verificationResult && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                            animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                            className={clsx(
+                                                "p-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm",
+                                                verificationResult.success ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                                            )}
+                                        >
+                                            {verificationResult.success ? <CheckCircle size={16} /> : <X size={16} />}
+                                            {verificationResult.message}
+                                        </motion.div>
                                     )}
-                                >
-                                    {verificationResult.success ? <CheckCircle size={18} /> : <X size={18} />}
-                                    {verificationResult.message}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </form>
-                </div>
+                                </AnimatePresence>
 
-                {/* Tabs */}
-                <div>
-                    <div className="flex gap-6 border-b border-gray-100 px-2">
-                        <TabButton active={activeTab === 'queue'} onClick={() => setActiveTab('queue')}>
-                            Live Queue <span className="ml-2 bg-gray-100 text-gray-600 text-xs py-0.5 px-2 rounded-full">{queueOrders.length}</span>
-                        </TabButton>
-                        <TabButton active={activeTab === 'completed'} onClick={() => setActiveTab('completed')}>
-                            History
-                        </TabButton>
+                                <button
+                                    type="submit"
+                                    disabled={otpInput.length !== 4}
+                                    className="w-full mt-4 bg-white text-black font-bold py-3 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                                >
+                                    Verify
+                                </button>
+                            </form>
+                        </div>
+                        {/* Abstract blobs */}
+                        <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
+                        <div className="absolute bottom-[-50px] left-[-50px] w-40 h-40 bg-blue-500/20 rounded-full blur-3xl" />
+                    </div>
+
+                    {/* Stats */}
+                    <div className="md:col-span-2 grid grid-cols-3 gap-4">
+                        <StatCard label="Total Earnings" value={`₹${totalEarnings}`} icon={<TrendingUp size={24} />} color="bg-green-50 text-green-600" />
+                        <StatCard label="In Queue" value={pendingOrdersCount} icon={<Clock size={24} />} color="bg-orange-50 text-orange-600" />
+                        <StatCard label="Completed" value={completedOrdersCount} icon={<CheckCircle size={24} />} color="bg-blue-50 text-blue-600" />
+
+                        {/* Quick Actions / Info */}
+                        <div className="col-span-3 bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                    <Printer size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-900">Printer Status</h3>
+                                    <p className="text-xs text-green-600 font-bold flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Online & Ready</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <h3 className="font-bold text-gray-900 text-2xl">{orders.length}</h3>
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wide">Total Orders</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Orders List */}
-                <div className="space-y-3 pb-24">
-                    <AnimatePresence mode='popLayout'>
-                        {displayedOrders.length === 0 ? (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-                                <div className="w-16 h-16 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FileText size={32} />
+                {/* Tabs & List */}
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[500px]">
+                    <div className="flex border-b border-gray-100 px-6 pt-2">
+                        <TabButton active={activeTab === 'queue'} onClick={() => setActiveTab('queue')}>
+                            Active Queue <span className="ml-2 bg-black text-white text-[10px] py-0.5 px-2 rounded-full">{queueOrders.length}</span>
+                        </TabButton>
+                        <TabButton active={activeTab === 'completed'} onClick={() => setActiveTab('completed')}>
+                            Order History
+                        </TabButton>
+                    </div>
+
+                    <div className="p-6 bg-gray-50/50">
+                        <AnimatePresence mode='popLayout'>
+                            {displayedOrders.length === 0 ? (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
+                                    <div className="w-20 h-20 bg-white border border-dashed border-gray-300 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                                        <FileText size={40} />
+                                    </div>
+                                    <h3 className="text-gray-900 font-bold">No orders found</h3>
+                                    <p className="text-gray-400 text-sm">Waiting for new requests...</p>
+                                </motion.div>
+                            ) : (
+                                <div className="grid gap-4">
+                                    {displayedOrders.map((order) => (
+                                        <OrderCard
+                                            key={order.id}
+                                            order={order}
+                                            onPrint={() => markAsPrinted(order.id)}
+                                            onCollect={() => markAsCollected(order.id)}
+                                        />
+                                    ))}
                                 </div>
-                                <p className="text-gray-400 font-medium">No orders in this list</p>
-                            </motion.div>
-                        ) : (
-                            displayedOrders.map((order) => (
-                                <OrderCard
-                                    key={order.id}
-                                    order={order}
-                                    onPrint={() => markAsPrinted(order.id)}
-                                    onCollect={() => markAsCollected(order.id)}
-                                />
-                            ))
-                        )}
-                    </AnimatePresence>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
             </div>
         </div>
@@ -151,13 +189,13 @@ export default function Vendor() {
 
 function StatCard({ label, value, icon, color }) {
     return (
-        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center gap-2">
-            <div className={clsx("w-8 h-8 rounded-full flex items-center justify-center", color)}>
+        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-full group hover:border-black/5 transition-colors">
+            <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110", color)}>
                 {icon}
             </div>
             <div>
-                <div className="text-lg font-bold text-gray-900 leading-none mb-1">{value}</div>
-                <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">{label}</div>
+                <div className="text-3xl font-bold text-gray-900 leading-none mb-1 tracking-tight">{value}</div>
+                <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">{label}</div>
             </div>
         </div>
     )
@@ -168,12 +206,12 @@ function TabButton({ children, active, onClick }) {
         <button
             onClick={onClick}
             className={clsx(
-                "pb-3 font-bold text-sm transition-colors relative",
-                active ? "text-primary" : "text-gray-400 hover:text-gray-600"
+                "pb-4 pt-4 px-4 font-bold text-sm transition-colors relative",
+                active ? "text-black" : "text-gray-400 hover:text-gray-600"
             )}
         >
             {children}
-            {active && <motion.div layoutId="tab" className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
+            {active && <motion.div layoutId="tab" className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
         </button>
     )
 }
@@ -181,7 +219,7 @@ function TabButton({ children, active, onClick }) {
 function OrderCard({ order, onPrint, onCollect }) {
     const downloadFile = () => {
         // Mock download
-        const text = `Mock File Content for Order #${order.id}\nFiles: ${order.files.map(f => f.name).join(', ')}`;
+        const text = `Mock File Content for Order #${order.id}\nUser: ${order.userEmail}\nFiles: ${order.files.map(f => f.name).join(', ')}`;
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -198,87 +236,76 @@ function OrderCard({ order, onPrint, onCollect }) {
             layout
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-primary/30 transition-all"
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm group hover:shadow-md transition-all"
         >
-            <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                    <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl",
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                    <div className={clsx("w-16 h-16 rounded-2xl flex flex-col items-center justify-center font-bold text-xl shrink-0 shadow-inner",
                         order.status === 'paid' ? "bg-blue-50 text-blue-600" :
                             order.status === 'printed' ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-600"
                     )}>
-                        {order.otp}
+                        <h4 className="text-2xl tracking-tighter leading-none">{order.otp}</h4>
+                        <span className="text-[10px] uppercase font-bold opacity-50">Code</span>
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-900">Order #{order.id}</h3>
-                        <p className="text-[10px] text-gray-500 font-medium mb-1">{order.userEmail || 'Guest'}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                            <StatusBadge status={order.status} />
-                            <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded font-bold">Paid ₹{order.totalAmount}</span>
+                        <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-gray-900 text-lg">Order #{order.id}</h3>
+                            <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                                <User size={10} /> {order.userEmail || 'Guest'}
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500 font-medium mb-3 flex items-center gap-2">
+                            <Clock size={12} /> {new Date(order.createdAt).toLocaleString()}
+                            <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                            <span className="text-green-600 font-bold">Paid ₹{order.totalAmount}</span>
+                        </p>
+
+                        <div className="flex flex-wrap gap-2">
+                            {order.files.map((file, i) => (
+                                <div key={i} className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-2 py-1 rounded-lg text-xs font-medium border border-gray-100">
+                                    <FileText size={12} /> {file.name}
+                                    <span className="text-gray-400">|</span>
+                                    <span className="text-[10px] uppercase font-bold text-gray-400">
+                                        {(file.size / 1024 / 1024).toFixed(1)}MB
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
-                <span className="text-xs text-gray-400 font-medium">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
 
-            <div className="bg-gray-50 rounded-lg p-3 mb-4 space-y-2">
-                {order.files.map((file, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                        <FileText size={14} className="text-gray-400" />
-                        <span className="truncate flex-1">{file.name}</span>
+                <div className="flex items-center gap-3 border-t md:border-t-0 border-gray-100 pt-3 md:pt-0">
+                    <div className="hidden md:flex flex-col items-end mr-4">
+                        <span className="text-xs font-bold text-gray-900">{order.settings.color ? 'Color' : 'B&W'} • {order.settings.doubleSided ? 'Double' : 'Single'}</span>
+                        <span className="text-xs text-gray-500 font-medium">{order.settings.copies} Copy</span>
                     </div>
-                ))}
-            </div>
 
-            <div className="flex items-center gap-3 text-xs font-semibold text-gray-500 mb-4 px-1">
-                <span className="bg-gray-100 px-2 py-1 rounded">{order.settings.color ? 'Color' : 'B&W'}</span>
-                <span className="bg-gray-100 px-2 py-1 rounded">{order.settings.doubleSided ? 'Double Sided' : 'Single Sided'}</span>
-                <span className="bg-gray-100 px-2 py-1 rounded">{order.settings.copies} Copies</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-                <button
-                    onClick={downloadFile}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-50 transition-colors"
-                >
-                    <Download size={16} /> Download
-                </button>
-
-                {order.status === 'paid' && (
-                    <button onClick={onPrint} className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
-                        <Printer size={16} /> Mark Printed
+                    <button
+                        onClick={downloadFile}
+                        className="p-3 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+                        title="Download Files"
+                    >
+                        <Download size={20} />
                     </button>
-                )}
 
-                {order.status === 'printed' && (
-                    <button onClick={onCollect} className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-colors shadow-lg shadow-green-200">
-                        <Check size={16} /> Complete Order
-                    </button>
-                )}
-                {order.status === 'collected' && (
-                    <button disabled className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-gray-100 text-gray-400 font-bold text-sm cursor-not-allowed">
-                        <CheckCircle size={16} /> Completed
-                    </button>
-                )}
+                    {order.status === 'paid' && (
+                        <button onClick={onPrint} className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 flex items-center justify-center gap-2 whitespace-nowrap">
+                            <Printer size={18} /> Mark Printed
+                        </button>
+                    )}
+                    {order.status === 'printed' && (
+                        <button onClick={onCollect} className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-colors shadow-lg shadow-green-200 flex items-center justify-center gap-2 whitespace-nowrap">
+                            <Check size={18} /> Hand Over
+                        </button>
+                    )}
+                    {order.status === 'collected' && (
+                        <div className="px-6 py-3 rounded-xl bg-gray-50 text-green-600 font-bold text-sm flex items-center gap-2 border border-green-100">
+                            <CheckCircle size={18} /> Completed
+                        </div>
+                    )}
+                </div>
             </div>
         </motion.div>
-    );
-}
-
-function StatusBadge({ status }) {
-    const styles = {
-        paid: "text-blue-600",
-        printed: "text-amber-600",
-        collected: "text-green-600"
-    };
-    const labels = {
-        paid: "In Queue",
-        printed: "Printed",
-        collected: "Collected"
-    };
-    return (
-        <span className={clsx("text-xs font-bold", styles[status])}>
-            {labels[status]}
-        </span>
     );
 }

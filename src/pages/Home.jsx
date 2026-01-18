@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Search, User, MapPin, Zap, FileText, Image, PenTool, BookOpen, Star, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
+import { Search, User, Zap, FileText, Image, PenTool, BookOpen, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
@@ -18,7 +18,7 @@ export default function Home() {
                 J.
               </div>
               <div>
-                <h1 className="text-xl font-bold leading-none tracking-tight">Print<span className="text-green-600">it</span></h1>
+                <h1 className="text-xl font-bold leading-none tracking-tight">JPRINT<span className="text-orange-500">.</span></h1>
                 <p className="text-[10px] text-gray-500 font-medium tracking-wide">JIIT SECTOR 128</p>
               </div>
             </div>

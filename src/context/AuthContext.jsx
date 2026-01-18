@@ -42,12 +42,13 @@ export const AuthProvider = ({ children }) => {
                 // Normal User Login
                 if (email && password) {
                     // Create consistent ID from email so data persists across logins
-                    const userId = 'user_' + btoa(email).substring(0, 10);
+                    const normalizedEmail = email.toLowerCase().trim();
+                    const userId = 'user_' + btoa(normalizedEmail).substring(0, 10);
 
                     const newUser = {
                         id: userId,
-                        email,
-                        name: email.split('@')[0],
+                        email: normalizedEmail,
+                        name: normalizedEmail.split('@')[0],
                         role: 'user'
                     };
                     setUser(newUser);
@@ -68,10 +69,11 @@ export const AuthProvider = ({ children }) => {
             }
 
             setTimeout(() => {
-                const userId = 'user_' + btoa(email).substring(0, 10);
+                const normalizedEmail = email.toLowerCase().trim();
+                const userId = 'user_' + btoa(normalizedEmail).substring(0, 10);
                 const newUser = {
                     id: userId,
-                    email,
+                    email: normalizedEmail,
                     name,
                     role
                 };
