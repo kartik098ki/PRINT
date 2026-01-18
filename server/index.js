@@ -124,7 +124,7 @@ app.post('/api/orders', (req, res) => {
     console.log('[POST] /api/orders', req.body);
     const { userId, userEmail, files, settings, totalAmount, otp } = req.body;
 
-    if (!files || !totalAmount) {
+    if (!files || totalAmount === undefined) {
         console.error('Order creation failed: Missing required fields', { files, totalAmount });
         return res.status(400).json({ error: 'Missing required fields (files or totalAmount)' });
     }

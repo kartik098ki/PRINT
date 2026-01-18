@@ -126,14 +126,15 @@ export const OrderProvider = ({ children }) => {
                 setOrders(prev => [newOrder, ...prev]);
                 setCurrentOrder({ files: [], settings: { copies: 1, color: false, doubleSided: false } });
                 setIsProcessingPayment(false);
-                return newOtp;
+                return { success: true, otp: newOtp };
             } else {
-                throw new Error("Order failed");
+                const errData = await response.json();
+                throw new Error(errData.error || "Order failed");
             }
         } catch (err) {
             console.error(err);
             setIsProcessingPayment(false);
-            return null;
+            return { success: false, error: err.message };
         }
     };
 

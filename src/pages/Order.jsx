@@ -22,12 +22,12 @@ export default function Order() {
     const handlePay = async () => {
         setIsProcessing(true);
         try {
-            const otp = await placeOrder(total);
-            if (otp) {
-                setCompletedOrder({ otp });
+            const result = await placeOrder(total);
+            if (result && result.success) {
+                setCompletedOrder({ otp: result.otp });
                 setStep(3);
             } else {
-                alert("Order failed! Please check if the Backend Server is running.");
+                alert(`Order failed: ${result?.error || "Please check if the Backend Server is running."}`);
             }
         } catch (e) {
             console.error(e);
