@@ -7,7 +7,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Vendor() {
-    const { orders, verifyOrderOtp, markAsPrinted, markAsCollected } = useOrder();
+    const { orders: ordersList, verifyOrderOtp, markAsPrinted, markAsCollected } = useOrder();
+    const orders = ordersList || []; // Prevent crash if undefined
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [otpInput, setOtpInput] = useState('');
@@ -48,8 +49,7 @@ export default function Vendor() {
     const { user } = useAuth();
     useEffect(() => {
         if (!user || user.role !== 'vendor') {
-            // Optional: Redirect or just show access denied
-            // navigate('/vendor-login'); // Uncomment to auto-redirect
+            navigate('/vendor-login');
         }
     }, [user, navigate]);
 
