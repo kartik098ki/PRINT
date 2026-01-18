@@ -19,7 +19,7 @@ export default function Home() {
               </div>
               <div>
                 <h1 className="text-xl font-bold leading-none tracking-tight">JPRINT<span className="text-orange-500">.</span></h1>
-                <p className="text-[10px] text-gray-500 font-medium tracking-wide">JIIT SECTOR 128</p>
+                <p className="text-[10px] text-gray-500 font-medium tracking-wide">JIIT SECTOR 128 <span className="text-green-600 font-bold ml-1">(v2.0)</span></p>
               </div>
             </div>
 
