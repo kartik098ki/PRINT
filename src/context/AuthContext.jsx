@@ -18,69 +18,38 @@ export const AuthProvider = ({ children }) => {
         }
     }, [user]);
 
-    const login = (email, password, role = 'user') => {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                // STRICT VENDOR CHECK
-                if (role === 'vendor') {
-                    if (email === 'kartikguleria12@gmail.com' && password === 'kk@123') {
-                        const vendorUser = {
-                            id: 'vendor_admin',
-                            name: 'Kartik Guleria',
-                            email: email,
-                            role: 'vendor'
-                        };
-                        setUser(vendorUser);
-                        resolve(vendorUser);
-                        return;
-                    } else {
-                        reject('Invalid Admin Credentials');
-                        return;
-                    }
-                }
-
-                // Normal User Login
-                if (email && password) {
-                    // Create consistent ID from email so data persists across logins
-                    const normalizedEmail = email.toLowerCase().trim();
-                    const userId = 'user_' + btoa(normalizedEmail).substring(0, 10);
-
-                    const newUser = {
-                        id: userId,
-                        email: normalizedEmail,
-                        name: normalizedEmail.split('@')[0],
-                        role: 'user'
-                    };
-                    setUser(newUser);
-                    resolve(newUser);
-                } else {
-                    reject('Invalid credentials');
-                }
-            }, 800);
+    const login = async (email, password, role = 'user') => {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, role })
         });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw data.error || 'Login failed';
+        }
+
+        setUser(data);
+        return data;
     };
 
-    const register = (name, email, password, role = 'user', vendorKey = '') => {
-        return new Promise((resolve, reject) => {
-            // Block public vendor registration
-            if (role === 'vendor') {
-                reject("Vendor registration is closed. Please use Admin Login.");
-                return;
-            }
-
-            setTimeout(() => {
-                const normalizedEmail = email.toLowerCase().trim();
-                const userId = 'user_' + btoa(normalizedEmail).substring(0, 10);
-                const newUser = {
-                    id: userId,
-                    email: normalizedEmail,
-                    name,
-                    role
-                };
-                setUser(newUser);
-                resolve(newUser);
-            }, 800);
+    const register = async (name, email, password, role = 'user') => {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, role })
         });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw data.error || 'Registration failed';
+        }
+
+        setUser(data);
+        return data;
     };
 
     const logout = () => {

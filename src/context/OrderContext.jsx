@@ -7,11 +7,9 @@ export const useOrder = () => useContext(OrderContext);
 
 export const OrderProvider = ({ children }) => {
     const { user } = useAuth();
-    const [orders, setOrders] = useState(() => {
-        const saved = localStorage.getItem('jprint_orders');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [orders, setOrders] = useState([]);
 
+    // Order Creation State
     const [currentOrder, setCurrentOrder] = useState({
         files: [],
         settings: {
@@ -19,36 +17,48 @@ export const OrderProvider = ({ children }) => {
             color: false, // false = B/W, true = Color
             doubleSided: false,
         },
-        status: 'draft', // draft, paid, printed, collected
+        status: 'draft',
     });
 
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-    useEffect(() => {
-        localStorage.setItem('jprint_orders', JSON.stringify(orders));
-    }, [orders]);
+    // FETCH ORDERS (Live Sync / Polling)
+    const fetchOrders = async () => {
+        try {
+            // Vendors see ALL orders (no userId filter), Users see only theirs
+            // But currently the API handles filtering via query param if passed.
+            // For Vendor Dashboard (where this context is used), we want everything if vendor.
+            // For User Profile, we might want only theirs.
+            // For now, let's fetch ALL orders and filter client side if needed, OR relies on role.
 
-    // Real-time sync across tabs
-    useEffect(() => {
-        const handleStorageChange = (e) => {
-            if (e.key === 'jprint_orders') {
-                const newOrders = e.newValue ? JSON.parse(e.newValue) : [];
-                setOrders(newOrders);
+            // To simplify: The Backend /api/orders returns ALL orders by default.
+            // We can filter in the UI.
+            const res = await fetch('/api/orders');
+            if (res.ok) {
+                const data = await res.json();
+                setOrders(data);
             }
-        };
+        } catch (error) {
+            console.error("Failed to fetch orders", error);
+        }
+    };
 
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
+    // Initial Fetch & Polling
+    useEffect(() => {
+        fetchOrders();
+
+        // Poll every 3 seconds for "Live" dashboard feeling
+        const interval = setInterval(fetchOrders, 3000);
+        return () => clearInterval(interval);
+    }, []); // Run once on mount + interval
 
     const addFile = (file) => {
-        // In a real app, we'd upload. Here we just store metadata and create an object URL for preview.
         const fileObj = {
             id: crypto.randomUUID(),
             name: file.name,
             type: file.type,
             size: file.size,
-            previewUrl: URL.createObjectURL(file), // For previewing images
+            previewUrl: null, // URLs don't persist well to DB without file server, skipping for now
             timestamp: Date.now()
         };
         setCurrentOrder(prev => ({
@@ -71,60 +81,56 @@ export const OrderProvider = ({ children }) => {
         }));
     };
 
-    // Ensure unique OTP
     const generateUniqueOtp = (currentOrders) => {
         let newOtp;
         let isUnique = false;
-        // Get all active OTPs to avoid collision
         const activeOtps = new Set(currentOrders.map(o => o.otp));
-
         while (!isUnique) {
             newOtp = Math.floor(1000 + Math.random() * 9000).toString();
-            if (!activeOtps.has(newOtp)) {
-                isUnique = true;
-            }
+            if (!activeOtps.has(newOtp)) isUnique = true;
         }
         return newOtp;
     };
 
-    const placeOrder = (amount) => {
-        return new Promise((resolve) => {
-            setIsProcessingPayment(true);
-            setTimeout(() => {
-                // READ latest orders directly from storage to prevent collisions/stale state
-                const currentStored = localStorage.getItem('jprint_orders');
-                const latestOrders = currentStored ? JSON.parse(currentStored) : [];
+    const placeOrder = async (amount) => {
+        setIsProcessingPayment(true);
 
-                const newOtp = generateUniqueOtp(latestOrders);
-                const newOrder = {
-                    id: Date.now().toString(),
-                    userId: user?.id || 'guest',
-                    userEmail: user?.email || 'Guest',
-                    files: currentOrder.files,
-                    settings: currentOrder.settings,
-                    totalAmount: amount,
-                    status: 'paid', // paid, printed, collected
-                    otp: newOtp,
-                    createdAt: new Date().toISOString()
-                };
+        // Generate OTP based on current list
+        const newOtp = generateUniqueOtp(orders);
 
-                const updatedOrders = [newOrder, ...latestOrders];
+        const orderData = {
+            userId: user?.id || 'guest',
+            userEmail: user?.email || 'Guest',
+            files: currentOrder.files,
+            settings: currentOrder.settings,
+            totalAmount: amount,
+            otp: newOtp
+        };
 
-                // Update State AND LocalStorage immediately
-                setOrders(updatedOrders);
-                localStorage.setItem('jprint_orders', JSON.stringify(updatedOrders));
+        try {
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
 
+            if (response.ok) {
+                const newOrder = await response.json();
+                setOrders(prev => [newOrder, ...prev]);
+                setCurrentOrder({ files: [], settings: { copies: 1, color: false, doubleSided: false } });
                 setIsProcessingPayment(false);
-                setCurrentOrder({ files: [], settings: { copies: 1, color: false, doubleSided: false } }); // Reset
-                resolve(newOtp);
-            }, 1000); // Simulate payment delay
-        });
+                return newOtp;
+            } else {
+                throw new Error("Order failed");
+            }
+        } catch (err) {
+            console.error(err);
+            setIsProcessingPayment(false);
+            return null;
+        }
     };
 
     const calculateTotal = () => {
-        // Pricing Mock: 
-        // B/W: 2 rs per page
-        // Color: 10 rs per page
         const baseRate = currentOrder.settings.color ? 10 : 2;
         const items = currentOrder.files.length;
         const copies = currentOrder.settings.copies;
@@ -133,6 +139,7 @@ export const OrderProvider = ({ children }) => {
 
     // Vendor Actions
     const verifyOrderOtp = (orderId, otpInput) => {
+        // Verification is just checking local list (which is synced via polling)
         const order = orders.find(o => o.id === orderId);
         if (!order) return { success: false, message: 'Order not found' };
         if (order.otp === otpInput) {
@@ -141,16 +148,27 @@ export const OrderProvider = ({ children }) => {
         return { success: false, message: 'Invalid OTP' };
     };
 
-    const markAsPrinted = (orderId) => {
+    const markAsPrinted = async (orderId) => {
+        // Optimistic UI update
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'printed' } : o);
         setOrders(updated);
-        localStorage.setItem('jprint_orders', JSON.stringify(updated));
+
+        await fetch(`/api/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'printed' })
+        });
     };
 
-    const markAsCollected = (orderId) => {
+    const markAsCollected = async (orderId) => {
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'collected' } : o);
         setOrders(updated);
-        localStorage.setItem('jprint_orders', JSON.stringify(updated));
+
+        await fetch(`/api/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'collected' })
+        });
     };
 
     return (
