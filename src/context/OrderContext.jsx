@@ -65,13 +65,29 @@ export const OrderProvider = ({ children }) => {
             name: file.name,
             type: file.type,
             size: file.size,
-            previewUrl: null, // URLs don't persist well to DB without file server, skipping for now
+            previewUrl: null,
             timestamp: Date.now()
         };
         setCurrentOrder(prev => ({
             ...prev,
             files: [...prev.files, fileObj]
         }));
+    };
+
+    const addStationeryItem = (item) => {
+        const itemObj = {
+            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+            name: item.name,
+            type: 'stationery',
+            price: item.price,
+            size: 0, // Placeholder
+            timestamp: Date.now()
+        };
+        setCurrentOrder(prev => ({
+            ...prev,
+            files: [...prev.files, itemObj]
+        }));
+        // Optional: Trigger a toast or vibration here if possible
     };
 
     const removeFile = (fileId) => {
@@ -154,10 +170,22 @@ export const OrderProvider = ({ children }) => {
     };
 
     const calculateTotal = () => {
-        const baseRate = currentOrder.settings.color ? 10 : 2;
-        const items = currentOrder.files.length;
-        const copies = currentOrder.settings.copies;
-        return items * copies * baseRate;
+        let total = 0;
+
+        // Calculate Print Cost
+        const printFiles = currentOrder.files.filter(f => f.type !== 'stationery');
+        if (printFiles.length > 0) {
+            const baseRate = currentOrder.settings.color ? 10 : 2;
+            total += printFiles.length * currentOrder.settings.copies * baseRate;
+        }
+
+        // Calculate Stationery Cost
+        const stationeryItems = currentOrder.files.filter(f => f.type === 'stationery');
+        stationeryItems.forEach(item => {
+            total += (item.price || 0);
+        });
+
+        return total;
     };
 
     // Vendor Actions
@@ -199,6 +227,8 @@ export const OrderProvider = ({ children }) => {
             orders,
             currentOrder,
             addFile,
+            addStationeryItem,
+            removeFile,
             removeFile,
             updateSettings,
             placeOrder,

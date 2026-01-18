@@ -3,9 +3,20 @@ import { Search, User, Zap, FileText, Image, PenTool, BookOpen, TrendingUp, Spar
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
+import { useOrder } from '../context/OrderContext';
+
 export default function Home() {
   const { user } = useAuth();
-  const navigate = useNavigate(); // Add navigate hook
+  const { addStationeryItem, currentOrder } = useOrder();
+  const navigate = useNavigate();
+
+  const handleAddToCart = (name, price) => {
+    addStationeryItem({ name, price });
+    // Navigate to order page to see cart or stay here? 
+    // User said "just add to cart". Let's show a floating "Go to Cart" button.
+  };
+
+  const cartCount = currentOrder.files.length;
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-28 font-sans text-gray-900 selection:bg-black selection:text-white">
@@ -41,21 +52,8 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Premium Membership Banner (New Feature) */}
-          <div className="mb-4 bg-gray-900 rounded-2xl p-4 text-white flex items-center justify-between shadow-lg shadow-gray-200" onClick={() => navigate('/profile')}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 flex items-center justify-center text-black font-bold">
-                <Sparkles size={20} />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold tracking-tight">J-Premium Member</h3>
-                <p className="text-[10px] text-gray-400 font-medium">Get priority printing & discounts</p>
-              </div>
-            </div>
-            <span className="bg-white/10 text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider text-white border border-white/20">
-              Join Now
-            </span>
-          </div>
+          {/* Premium Membership Banner REMOVED */}
+
 
           {/* Search Bar - Apple Style */}
           <div className="relative group">
@@ -126,7 +124,7 @@ export default function Home() {
               price="₹10"
               icon={<PenTool size={20} className="text-blue-500" />}
               bg="bg-blue-50"
-              onClick={() => alert("Please collect from counter directly.")}
+              onClick={() => handleAddToCart("Pentonic Ball Pen", 10)}
             />
             <div className="h-px bg-gray-50 mx-4" />
             <ProductRow
@@ -135,7 +133,7 @@ export default function Home() {
               price="₹20"
               icon={<FileText size={20} className="text-green-600" />}
               bg="bg-green-100"
-              onClick={() => alert("Please collect from counter directly.")}
+              onClick={() => handleAddToCart("Saddle Stick File", 20)}
             />
             <div className="h-px bg-gray-50 mx-4" />
             <ProductRow
@@ -144,10 +142,21 @@ export default function Home() {
               price="₹5"
               icon={<PenTool size={20} className="text-gray-500" />}
               bg="bg-gray-100"
-              onClick={() => alert("Please collect from counter directly.")}
+              onClick={() => handleAddToCart("Apsara Platinum Pencil", 5)}
             />
           </div>
         </section>
+
+        {/* Floating Cart Button (Only if items in cart) */}
+        {cartCount > 0 && (
+          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+            <button onClick={() => navigate('/order')} className="bg-black text-white px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 hover:scale-105 transition-transform">
+              <span>{cartCount} Items</span>
+              <span className="w-px h-4 bg-white/20"></span>
+              <span>Go to Cart <ArrowRight size={16} className="inline ml-1" /></span>
+            </button>
+          </div>
+        )}
 
         {/* Support Banner */}
         <div className="bg-gray-900 rounded-2xl p-6 text-white text-center relative overflow-hidden">

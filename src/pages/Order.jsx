@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Check, ChevronRight, Loader2, Upload, File, X, FileImage, CreditCard } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Loader2, Upload, File, X, FileImage, CreditCard, PenTool } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOrder } from '../context/OrderContext';
@@ -111,11 +111,14 @@ export default function Order() {
                                 {currentOrder.files.map((file) => (
                                     <div key={file.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
-                                            {file.type.startsWith('image/') ? <FileImage size={20} /> : <File size={20} />}
+                                            {file.type === 'stationery' ? <PenTool size={20} /> :
+                                                file.type.startsWith('image/') ? <FileImage size={20} /> : <File size={20} />}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium truncate text-sm text-gray-900">{file.name}</p>
-                                            <p className="text-xs text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                            <p className="text-xs text-gray-400">
+                                                {file.type === 'stationery' ? `₹${file.price}` : `${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                                            </p>
                                         </div>
                                         <button onClick={() => removeFile(file.id)} className="text-gray-400 hover:text-red-500 transition-colors">
                                             <X size={20} />
@@ -124,7 +127,7 @@ export default function Order() {
                                 ))}
                                 {hasFiles && (
                                     <div className="text-center pt-2">
-                                        <p className="text-xs text-gray-400">{currentOrder.files.length} files selected</p>
+                                        <p className="text-xs text-gray-400">{currentOrder.files.length} items select</p>
                                     </div>
                                 )}
                             </div>

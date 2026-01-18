@@ -56,7 +56,7 @@ export default function Profile() {
                     <div className="relative z-10 flex justify-between items-start">
                         <div>
                             <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Total Balance</p>
-                            <h3 className="text-4xl font-bold tracking-tight">₹150.00</h3>
+                            <h3 className="text-4xl font-bold tracking-tight opacity-50">₹ --.--</h3>
                             <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded text-white font-medium mt-1 inline-block">Coming Soon</span>
                         </div>
                         <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
