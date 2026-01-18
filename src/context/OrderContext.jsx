@@ -34,12 +34,19 @@ export const OrderProvider = ({ children }) => {
             // To simplify: The Backend /api/orders returns ALL orders by default.
             // We can filter in the UI.
             const res = await fetch('/api/orders');
-            if (res.ok) {
-                const data = await res.json();
-                setOrders(data);
+            if (!res.ok) throw new Error(res.statusText);
+
+            // Check content type to avoid JSON parse errors on 404 HTML responses
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                console.warn("Backend not returning JSON. Is the server running?");
+                return;
             }
+
+            const data = await res.json();
+            setOrders(data);
         } catch (error) {
-            console.error("Failed to fetch orders", error);
+            console.error("Failed to fetch orders:", error);
         }
     };
 

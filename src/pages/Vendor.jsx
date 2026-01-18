@@ -165,7 +165,13 @@ export default function Vendor() {
                                         <FileText size={40} />
                                     </div>
                                     <h3 className="text-gray-900 font-bold">No orders found</h3>
-                                    <p className="text-gray-400 text-sm">Waiting for new requests...</p>
+                                    <p className="text-gray-400 text-sm mb-4">Waiting for new requests...</p>
+
+                                    {/* Connection Check Hint */}
+                                    <div className="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-xs font-bold inline-flex items-center gap-2">
+                                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                                        If you placed an order and don't see it, check if the Backend Server is running.
+                                    </div>
                                 </motion.div>
                             ) : (
                                 <div className="grid gap-4">
