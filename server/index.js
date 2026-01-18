@@ -116,7 +116,14 @@ app.get('/api/orders', (req, res) => {
 
 // 4. CREATE ORDER
 app.post('/api/orders', (req, res) => {
+    console.log('[POST] /api/orders', req.body);
     const { userId, userEmail, files, settings, totalAmount, otp } = req.body;
+
+    if (!files || !totalAmount) {
+        console.error('Order creation failed: Missing required fields', { files, totalAmount });
+        return res.status(400).json({ error: 'Missing required fields (files or totalAmount)' });
+    }
+
     const id = Date.now().toString();
 
     const sql = `INSERT INTO orders (id, userId, userEmail, files, settings, totalAmount, status, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -132,9 +139,13 @@ app.post('/api/orders', (req, res) => {
     ];
 
     db.run(sql, params, function (err) {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error('Order Insert Error:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
 
         // Return the full new order object
+        console.log('Order created successfully:', id);
         res.json({
             id, userId, userEmail, files, settings, totalAmount, status: 'paid', otp, created_at: new Date().toISOString()
         });
