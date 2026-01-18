@@ -1,150 +1,176 @@
 import { Link } from 'react-router-dom';
-import { Search, Clock, MapPin, User, ChevronRight, Star, ShoppingBag, FileText, Image, PenTool, BookOpen } from 'lucide-react';
+import { Search, User, MapPin, Zap, FileText, Image, PenTool, BookOpen, Star, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
 
 export default function Home() {
   const { user } = useAuth();
-  return (
-    <div className="min-h-screen bg-white pb-24 font-sans text-gray-900">
 
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="container max-w-md mx-auto p-4 pb-2">
-          {/* Top Bar: Location & User */}
+  return (
+    <div className="min-h-screen bg-neutral-50 pb-28 font-sans text-gray-900 selection:bg-black selection:text-white">
+
+      {/* Premium Header */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100/50 shadow-sm">
+        <div className="container max-w-md mx-auto p-4">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1 font-extrabold text-xs tracking-widest text-gray-500 uppercase">
-                <div className="w-0 h-0 border-l-[6px] border-l-transparent border-t-[8px] border-t-primary border-r-[6px] border-r-transparent"></div>
-                Delivering to
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center font-bold text-xl tracking-tighter shadow-lg shadow-black/20">
+                J.
               </div>
-              <div className="flex items-center gap-1 font-bold text-lg leading-none cursor-pointer group">
-                JIIT Sector 128 <ChevronRight size={18} className="text-primary group-hover:translate-x-1 transition-transform" />
+              <div>
+                <h1 className="text-xl font-bold leading-none tracking-tight">Print<span className="text-green-600">it</span></h1>
+                <p className="text-[10px] text-gray-500 font-medium tracking-wide">JIIT SECTOR 128</p>
               </div>
             </div>
-            <Link to="/login" className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-              <User size={20} className="text-gray-700" />
+
+            <Link to={user?.role === 'vendor' ? "/vendor" : (user ? "/profile" : "/login")}>
+              <motion.div whileTap={{ scale: 0.9 }} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center relative overflow-hidden">
+                {user ? (
+                  user.role === 'vendor' ? (
+                    <div className="w-full h-full bg-black text-white flex items-center justify-center font-bold text-xs">ADM</div>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-tr from-green-400 to-green-600 text-white flex items-center justify-center font-bold text-sm">
+                      {user.name?.[0].toUpperCase()}
+                    </div>
+                  )
+                ) : (
+                  <User size={20} className="text-gray-600" />
+                )}
+              </motion.div>
             </Link>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative mb-2">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          {/* Search Bar - Apple Style */}
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" size={18} />
             <input
               type="text"
-              placeholder="Search 'Lab Manual', 'Notes'..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary/50 focus:ring-4 focus:ring-primary/10 outline-none transition-all font-medium text-sm"
+              placeholder="Search 'Lab Manual', 'Binding'..."
+              className="w-full pl-11 pr-4 py-3.5 bg-gray-100 border border-transparent rounded-2xl focus:bg-white focus:border-black/10 focus:ring-4 focus:ring-black/5 outline-none transition-all font-medium text-sm placeholder:text-gray-500"
             />
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="container max-w-md mx-auto p-4 space-y-8">
+      <div className="container max-w-md mx-auto p-4 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-        {/* Hero Banners (Carousel style) */}
-        <section className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide snap-x">
-          <div className="min-w-[85%] snap-center rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 p-5 text-white shadow-lg relative overflow-hidden flex flex-col justify-between h-[160px]">
+        {/* Hero Area - Bento Grid Style */}
+        <section className="grid grid-cols-2 gap-3 h-48">
+          <Link to="/order" className="bg-black rounded-3xl p-5 text-white flex flex-col justify-between relative overflow-hidden group shadow-xl shadow-black/10">
             <div className="relative z-10">
-              <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-2 inline-block">Fastest Delivery</span>
-              <h2 className="text-2xl font-bold leading-tight mb-1">Print Lab <br />Manuals</h2>
-              <p className="text-white/80 text-xs mb-4">Starting @ ₹2/page</p>
-              <Link to="/order" className="bg-white text-indigo-600 px-4 py-2 rounded-lg text-xs font-bold inline-block shadow-sm active:scale-95 transition-transform">
-                Order Now
-              </Link>
+              <span className="bg-white/20 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider mb-2 inline-block">Flash Print</span>
+              <h2 className="text-xl font-bold leading-tight">Instant <br />B&W</h2>
             </div>
-            <FileText className="absolute right-[-10px] bottom-[-20px] opacity-20 rotate-12" size={120} />
-          </div>
+            <div className="relative z-10 flex items-center gap-2 text-xs font-bold text-gray-300 group-hover:text-white transition-colors">
+              Start Order <ArrowRight size={14} />
+            </div>
+            <Zap className="absolute right-[-20px] bottom-[-20px] text-white/10 group-hover:text-white/20 transition-colors rotate-12" size={140} />
+          </Link>
 
-          <div className="min-w-[85%] snap-center rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 p-5 text-white shadow-lg relative overflow-hidden flex flex-col justify-between h-[160px]">
-            <div className="relative z-10">
-              <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-2 inline-block">Best Quality</span>
-              <h2 className="text-2xl font-bold leading-tight mb-1">Color <br />Prints</h2>
-              <p className="text-white/80 text-xs mb-4">For Projects & Posters</p>
-              <Link to="/order" className="bg-white text-teal-600 px-4 py-2 rounded-lg text-xs font-bold inline-block shadow-sm active:scale-95 transition-transform">
-                Upload Photo
-              </Link>
-            </div>
-            <Image className="absolute right-[-10px] bottom-[-20px] opacity-20 rotate-12" size={120} />
+          <div className="grid grid-rows-2 gap-3">
+            <Link to="/order" className="bg-green-100 rounded-3xl p-4 flex flex-col justify-center relative overflow-hidden group hover:bg-green-200 transition-colors">
+              <h3 className="font-bold text-green-900 z-10">Color Print</h3>
+              <p className="text-[10px] text-green-700 z-10 font-medium">For Projects</p>
+              <Image className="absolute right-[-10px] bottom-[-10px] text-green-600/20 rotate-12" size={80} />
+            </Link>
+            <Link to="/order" className="bg-purple-100 rounded-3xl p-4 flex flex-col justify-center relative overflow-hidden group hover:bg-purple-200 transition-colors">
+              <h3 className="font-bold text-purple-900 z-10">Spiral Bind</h3>
+              <p className="text-[10px] text-purple-700 z-10 font-medium">₹30 Only</p>
+              <PenTool className="absolute right-[-10px] bottom-[-10px] text-purple-600/20 rotate-12" size={80} />
+            </Link>
           </div>
         </section>
 
-        {/* Categories Grid */}
+        {/* Categories Scroller */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-lg">Shop by Category</h3>
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h3 className="font-bold text-lg tracking-tight flex items-center gap-2">
+              <Sparkles size={16} className="text-yellow-500 fill-yellow-500" /> Explore
+            </h3>
           </div>
-          <div className="grid grid-cols-4 gap-x-2 gap-y-6">
-            <CategoryItem icon={<FileText />} label="Documents" color="bg-blue-50 text-blue-600" />
-            <CategoryItem icon={<BookOpen />} label="Lab Manuals" color="bg-orange-50 text-orange-600" />
-            <CategoryItem icon={<Image />} label="Photos" color="bg-purple-50 text-purple-600" />
-            <CategoryItem icon={<PenTool />} label="Binding" color="bg-pink-50 text-pink-600" />
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+            <CategoryPill icon={<FileText size={18} />} label="Docs" active />
+            <CategoryPill icon={<BookOpen size={18} />} label="Manuals" />
+            <CategoryPill icon={<Image size={18} />} label="Posters" />
+            <CategoryPill icon={<PenTool size={18} />} label="Binding" />
           </div>
         </section>
 
-      </div>
-
-      {/* Bottom Nav */}
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 py-3 px-6 z-50 flex justify-between items-center text-xs font-medium text-gray-400">
-        <Link to="/" className="flex flex-col items-center gap-1 text-primary">
-          <ShoppingBag size={24} strokeWidth={2.5} />
-          <span>Print</span>
-        </Link>
-        <Link to="/order" className="flex flex-col items-center gap-1 hover:text-gray-900 transition-colors">
-          <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center text-white shadow-lg -mt-8 border-4 border-white">
-            <span className="text-xl">+</span>
+        {/* Trending Products */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-gray-900 font-bold text-lg px-1">
+            <TrendingUp size={20} /> Trending at JIIT
           </div>
-          <span>Upload</span>
-        </Link>
-        <Link to={user?.role === 'vendor' ? "/vendor" : (user ? "/profile" : "/login")} className="flex flex-col items-center gap-1 hover:text-gray-900 transition-colors">
-          <User size={24} />
-          <span>{user?.role === 'vendor' ? 'Admin' : (user ? 'Account' : 'Profile')}</span>
-        </Link>
-      </div>
 
-      {/* Floating Login for Students if not logged in */}
-      {!user && (
-        <div className="fixed bottom-20 right-6 z-40">
-          <Link to="/login" className="bg-primary text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-primary/30 flex items-center gap-2 animate-bounce">
-            <User size={18} /> Student Login
-          </Link>
+          <div className="bg-white rounded-3xl p-1 shadow-sm border border-gray-100">
+            <ProductRow
+              title="Lab Manual (Physics)"
+              desc="Standard Format • 25 Pages"
+              price="₹50"
+              icon={<BookOpen size={20} className="text-blue-500" />}
+              bg="bg-blue-50"
+            />
+            <div className="h-px bg-gray-50 mx-4" />
+            <ProductRow
+              title="Project Report (Black)"
+              desc="Premium Bond Paper"
+              price="₹2/pg"
+              icon={<FileText size={20} className="text-gray-600" />}
+              bg="bg-gray-100"
+            />
+            <div className="h-px bg-gray-50 mx-4" />
+            <ProductRow
+              title="Poster Printing"
+              desc="A3 Glossy • High Quality"
+              price="₹40"
+              icon={<Image size={20} className="text-pink-500" />}
+              bg="bg-pink-50"
+            />
+          </div>
+        </section>
+
+        {/* Support Banner */}
+        <div className="bg-gray-900 rounded-2xl p-6 text-white text-center relative overflow-hidden">
+          <div className="relative z-10">
+            <h4 className="font-bold text-lg mb-1">Need Help?</h4>
+            <p className="text-gray-400 text-sm mb-4">Contact the shop directly.</p>
+            <button className="bg-white text-black px-6 py-2 rounded-full text-xs font-bold hover:scale-105 transition-transform">
+              Chat with Verified Vendor
+            </button>
+          </div>
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-gray-800 to-transparent opacity-50"></div>
         </div>
-      )}
+
+      </div>
 
     </div>
   );
 }
 
-function CategoryItem({ icon, label, color }) {
+function CategoryPill({ icon, label, active }) {
   return (
-    <Link to="/order" className="flex flex-col items-center gap-2 group cursor-pointer">
-      <div className={`w-[70px] h-[70px] rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all group-active:scale-95 ${color}`}>
-        {icon}
-      </div>
-      <span className="text-[11px] font-bold text-center leading-tight text-gray-700">{label}</span>
-    </Link>
-  );
+    <button className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap transition-all shadow-sm ${active ? 'bg-black text-white shadow-lg shadow-black/20' : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'}`}>
+      {icon} {label}
+    </button>
+  )
 }
 
-function ProductItem({ title, desc, price, badge, icon }) {
+function ProductRow({ title, desc, price, icon, bg }) {
   return (
-    <div className="flex items-center gap-4 bg-white border border-gray-100 p-3 rounded-2xl shadow-sm hover:border-primary/30 transition-colors relative overflow-hidden group">
-      {badge && (
-        <div className="absolute top-0 right-0 bg-primary text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg z-10">
-          {badge}
-        </div>
-      )}
-      <div className="w-20 h-20 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 shrink-0 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+    <div className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors rounded-2xl cursor-pointer group">
+      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${bg} group-hover:scale-110 transition-transform`}>
         {icon}
       </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="font-bold text-gray-900 truncate">{title}</h4>
-        <p className="text-xs text-gray-500 mb-3 truncate">{desc}</p>
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-sm">{price}</span>
-          <Link to="/order" className="bg-red-50 text-red-600 border border-red-100 px-4 py-1.5 rounded-lg text-xs font-bold uppercase hover:bg-red-600 hover:text-white transition-colors">
-            ADD
-          </Link>
-        </div>
+      <div className="flex-1">
+        <h4 className="font-bold text-gray-900 text-sm">{title}</h4>
+        <p className="text-xs text-gray-500 font-medium">{desc}</p>
+      </div>
+      <div className="flex flex-col items-end gap-1">
+        <span className="font-bold text-sm">{price}</span>
+        <Link to="/order" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+          <span className="text-lg leading-none mb-0.5">+</span>
+        </Link>
       </div>
     </div>
-  );
+  )
 }
