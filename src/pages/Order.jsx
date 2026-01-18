@@ -23,10 +23,15 @@ export default function Order() {
         setIsProcessing(true);
         try {
             const otp = await placeOrder(total);
-            setCompletedOrder({ otp });
-            setStep(3);
+            if (otp) {
+                setCompletedOrder({ otp });
+                setStep(3);
+            } else {
+                alert("Order failed! Please check if the Backend Server is running.");
+            }
         } catch (e) {
             console.error(e);
+            alert("Something went wrong. Please try again.");
         } finally {
             setIsProcessing(false);
         }

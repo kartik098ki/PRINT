@@ -33,7 +33,7 @@ export const OrderProvider = ({ children }) => {
 
             // To simplify: The Backend /api/orders returns ALL orders by default.
             // We can filter in the UI.
-            const res = await fetch('/api/orders');
+            const res = await fetch('http://localhost:5001/api/orders');
             if (!res.ok) throw new Error(res.statusText);
 
             // Check content type to avoid JSON parse errors on 404 HTML responses
@@ -115,7 +115,7 @@ export const OrderProvider = ({ children }) => {
         };
 
         try {
-            const response = await fetch('/api/orders', {
+            const response = await fetch('http://localhost:5001/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
@@ -160,7 +160,7 @@ export const OrderProvider = ({ children }) => {
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'printed' } : o);
         setOrders(updated);
 
-        await fetch(`/api/orders/${orderId}`, {
+        await fetch(`http://localhost:5001/api/orders/${orderId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'printed' })
@@ -171,7 +171,7 @@ export const OrderProvider = ({ children }) => {
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'collected' } : o);
         setOrders(updated);
 
-        await fetch(`/api/orders/${orderId}`, {
+        await fetch(`http://localhost:5001/api/orders/${orderId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'collected' })
