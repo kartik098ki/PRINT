@@ -61,7 +61,7 @@ export const OrderProvider = ({ children }) => {
 
     const addFile = (file) => {
         const fileObj = {
-            id: crypto.randomUUID(),
+            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
             name: file.name,
             type: file.type,
             size: file.size,
@@ -99,40 +99,47 @@ export const OrderProvider = ({ children }) => {
         return newOtp;
     };
 
-    const placeOrder = async (amount) => {
+    const placeOrder = async (totalAmount) => {
         setIsProcessingPayment(true);
+        // Sanitize files to only send metadata (JSON.stringify keeps File objects empty anyway, but this is cleaner)
+        const filesData = currentOrder.files.map(f => ({
+            id: f.id,
+            name: f.name,
+            size: f.size,
+            type: f.type
+        }));
 
-        // Generate OTP based on current list
-        const newOtp = generateUniqueOtp(orders);
-
+        const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
         const orderData = {
-            userId: user?.id || 'guest',
-            userEmail: user?.email || 'Guest',
-            files: currentOrder.files,
+            userId: user?.id,
+            userEmail: user?.email,
+            files: filesData,
             settings: currentOrder.settings,
-            totalAmount: amount,
+            totalAmount: totalAmount || 0,
             otp: newOtp
         };
 
         try {
+            console.log("Sending Order Data:", orderData);
             const response = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
             });
 
+            const result = await response.json();
+
             if (response.ok) {
-                const newOrder = await response.json();
-                setOrders(prev => [newOrder, ...prev]);
+                // Clear order on success
+                setOrders(prev => [result, ...prev]);
                 setCurrentOrder({ files: [], settings: { copies: 1, color: false, doubleSided: false } });
                 setIsProcessingPayment(false);
                 return { success: true, otp: newOtp };
             } else {
-                const errData = await response.json();
-                throw new Error(errData.error || "Order failed");
+                throw new Error(result.error || "Order failed");
             }
         } catch (err) {
-            console.error(err);
+            console.error("Place Order Error:", err);
             setIsProcessingPayment(false);
             return { success: false, error: err.message };
         }
