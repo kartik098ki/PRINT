@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./db');
+const db = require('./db-adapter');
 
 const app = express();
 const PORT = process.env.PORT || 5002;
@@ -26,7 +26,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // 1. REGISTER USER
-app.post('/api/register', (req, res) => {
+// 1. REGISTER USER
+app.post('/api/register', async (req, res) => {
     console.log('[POST] /api/register', req.body);
     const { name, email, password, role } = req.body;
     if (!email || !password) {
@@ -36,18 +37,19 @@ app.post('/api/register', (req, res) => {
     const id = 'user_' + Buffer.from(normalizedEmail).toString('base64').substring(0, 10);
 
     const sql = `INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)`;
-    db.run(sql, [id, name, normalizedEmail, password, role || 'user'], function (err) {
-        if (err) {
-            console.error('Register Error:', err.message);
-            return res.status(400).json({ error: 'Email already exists' });
-        }
+    try {
+        await db.query(sql, [id, name, normalizedEmail, password, role || 'user']);
         console.log('User registered:', normalizedEmail);
         res.json({ id, name, email: normalizedEmail, role: role || 'user' });
-    });
+    } catch (err) {
+        console.error('Register Error:', err.message);
+        return res.status(400).json({ error: 'Email already exists' });
+    }
 });
 
 // 2. LOGIN USER
-app.post('/api/login', (req, res) => {
+// 2. LOGIN USER
+app.post('/api/login', async (req, res) => {
     console.log('[POST] /api/login', req.body);
     const { email, password, role } = req.body;
 
@@ -76,11 +78,10 @@ app.post('/api/login', (req, res) => {
 
     // Normal DB Login
     const sql = `SELECT * FROM users WHERE email = ? AND password = ?`;
-    db.get(sql, [email.toLowerCase().trim(), password], (err, row) => {
-        if (err) {
-            console.error('Login DB Error:', err.message);
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const result = await db.query(sql, [email.toLowerCase().trim(), password]);
+        const row = result.rows[0];
+
         if (!row) {
             console.warn('Login failed: Invalid credentials for', email);
             return res.status(401).json({ error: 'Invalid credentials' });
@@ -93,11 +94,15 @@ app.post('/api/login', (req, res) => {
             email: row.email,
             role: row.role
         });
-    });
+    } catch (err) {
+        console.error('Login DB Error:', err.message);
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // 3. GET ORDERS (For Vendor Dashboard & User History)
-app.get('/api/orders', (req, res) => {
+// 3. GET ORDERS (For Vendor Dashboard & User History)
+app.get('/api/orders', async (req, res) => {
     // console.log('[GET] /api/orders', req.query); // Optional verbose log
     const { userId } = req.query; // Optional filter
 
@@ -109,28 +114,27 @@ app.get('/api/orders', (req, res) => {
         params = [userId];
     }
 
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            console.error('Get Orders Error:', err.message);
-            return res.status(500).json({ error: err.message });
-        }
-        try {
-            // Parse JSON fields
-            const orders = rows.map(o => ({
-                ...o,
-                files: JSON.parse(o.files || '[]'),
-                settings: JSON.parse(o.settings || '{}')
-            }));
-            res.json(orders);
-        } catch (parseError) {
-            console.error('JSON Parse Error in orders:', parseError);
-            res.status(500).json({ error: 'Data corruption detected in order history' });
-        }
-    });
+    try {
+        const result = await db.query(sql, params);
+        const rows = result.rows;
+
+        // Parse JSON fields
+        const orders = rows.map(o => ({
+            ...o,
+            files: JSON.parse(o.files || '[]'),
+            settings: JSON.parse(o.settings || '{}')
+        }));
+        res.json(orders);
+    } catch (err) {
+        console.error('Get Orders Error:', err.message);
+        // Handle parsing errors specifically if needed, but standard 500 is fine
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // 4. CREATE ORDER
-app.post('/api/orders', (req, res) => {
+// 4. CREATE ORDER
+app.post('/api/orders', async (req, res) => {
     console.log('[POST] /api/orders', req.body);
     const { userId, userEmail, files, settings, totalAmount, otp } = req.body;
 
@@ -153,30 +157,31 @@ app.post('/api/orders', (req, res) => {
         otp
     ];
 
-    db.run(sql, params, function (err) {
-        if (err) {
-            console.error('Order Insert Error:', err.message);
-            return res.status(500).json({ error: err.message });
-        }
-
-        // Return the full new order object
+    try {
+        await db.query(sql, params);
         console.log('Order created successfully:', id);
         res.json({
             id, userId, userEmail, files, settings, totalAmount, status: 'paid', otp, created_at: new Date().toISOString()
         });
-    });
+    } catch (err) {
+        console.error('Order Insert Error:', err.message);
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // 5. UPDATE ORDER STATUS (Vendor Actions)
-app.patch('/api/orders/:id', (req, res) => {
+// 5. UPDATE ORDER STATUS (Vendor Actions)
+app.patch('/api/orders/:id', async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
 
     const sql = `UPDATE orders SET status = ? WHERE id = ?`;
-    db.run(sql, [status, id], function (err) {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        await db.query(sql, [status, id]);
         res.json({ success: true, id, status });
-    });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // 100. Catch-All Route (Last Resort)

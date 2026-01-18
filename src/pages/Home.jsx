@@ -40,6 +40,22 @@ export default function Home() {
             </Link>
           </div>
 
+          {/* Balance Card (Coming Soon) */}
+          <div className="mb-4 bg-gray-900 rounded-2xl p-4 text-white flex items-center justify-between shadow-lg shadow-gray-200" onClick={() => alert("Wallet Feature Coming Soon!")}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <TrendingUp size={20} className="text-green-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 font-medium">J-Wallet Balance</p>
+                <h3 className="text-xl font-bold tracking-tight">₹ --.--</h3>
+              </div>
+            </div>
+            <span className="bg-white/10 text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-wider text-green-300">
+              Coming Soon
+            </span>
+          </div>
+
           {/* Search Bar - Apple Style */}
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" size={18} />
@@ -89,42 +105,45 @@ export default function Home() {
             </h3>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-            <CategoryPill icon={<FileText size={18} />} label="Docs" active />
-            <CategoryPill icon={<BookOpen size={18} />} label="Manuals" />
+            <CategoryPill icon={<Zap size={18} />} label="Instant" active />
+            <CategoryPill icon={<PenTool size={18} />} label="Stationery" />
+            <CategoryPill icon={<FileText size={18} />} label="Docs" />
             <CategoryPill icon={<Image size={18} />} label="Posters" />
-            <CategoryPill icon={<PenTool size={18} />} label="Binding" />
           </div>
         </section>
 
-        {/* Trending Products */}
+        {/* Stationery Items (Replaced Manuals) */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-gray-900 font-bold text-lg px-1">
-            <TrendingUp size={20} /> Trending at JIIT
+            <PenTool size={20} /> Stationery Store
           </div>
 
           <div className="bg-white rounded-3xl p-1 shadow-sm border border-gray-100">
             <ProductRow
-              title="Lab Manual (Physics)"
-              desc="Standard Format • 25 Pages"
-              price="₹50"
-              icon={<BookOpen size={20} className="text-blue-500" />}
+              title="Pentonic Ball Pen"
+              desc="Smooth Flow • Blue/Black"
+              price="₹10"
+              icon={<PenTool size={20} className="text-blue-500" />}
               bg="bg-blue-50"
+              onClick={() => alert("Please collect from counter directly.")}
             />
             <div className="h-px bg-gray-50 mx-4" />
             <ProductRow
-              title="Project Report (Black)"
-              desc="Premium Bond Paper"
-              price="₹2/pg"
-              icon={<FileText size={20} className="text-gray-600" />}
+              title="Saddle Stick File"
+              desc="A4 Size • Clear Transparent"
+              price="₹20"
+              icon={<FileText size={20} className="text-green-600" />}
+              bg="bg-green-100"
+              onClick={() => alert("Please collect from counter directly.")}
+            />
+            <div className="h-px bg-gray-50 mx-4" />
+            <ProductRow
+              title="Apsara Platinum Pencil"
+              desc="Extra Dark • High Quality"
+              price="₹5"
+              icon={<PenTool size={20} className="text-gray-500" />}
               bg="bg-gray-100"
-            />
-            <div className="h-px bg-gray-50 mx-4" />
-            <ProductRow
-              title="Poster Printing"
-              desc="A3 Glossy • High Quality"
-              price="₹40"
-              icon={<Image size={20} className="text-pink-500" />}
-              bg="bg-pink-50"
+              onClick={() => alert("Please collect from counter directly.")}
             />
           </div>
         </section>
@@ -155,9 +174,9 @@ function CategoryPill({ icon, label, active }) {
   )
 }
 
-function ProductRow({ title, desc, price, icon, bg }) {
+function ProductRow({ title, desc, price, icon, bg, onClick }) {
   return (
-    <div className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors rounded-2xl cursor-pointer group">
+    <div onClick={onClick} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors rounded-2xl cursor-pointer group">
       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${bg} group-hover:scale-110 transition-transform`}>
         {icon}
       </div>
@@ -167,9 +186,9 @@ function ProductRow({ title, desc, price, icon, bg }) {
       </div>
       <div className="flex flex-col items-end gap-1">
         <span className="font-bold text-sm">{price}</span>
-        <Link to="/order" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+        <button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-black hover:bg-black hover:text-white transition-colors">
           <span className="text-lg leading-none mb-0.5">+</span>
-        </Link>
+        </button>
       </div>
     </div>
   )
