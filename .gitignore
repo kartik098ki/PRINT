@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 *.db
 server/jprint_data.db
+server/.env
