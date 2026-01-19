@@ -229,7 +229,6 @@ export const OrderProvider = ({ children }) => {
             addFile,
             addStationeryItem,
             removeFile,
-            removeFile,
             updateSettings,
             placeOrder,
             calculateTotal,

@@ -1,26 +1,38 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
+import Auth from './pages/Auth';
+import Account from './pages/Account';
+
+// Existing imports for compatibility if needed, though we are focusing on the requested structure
 import Order from './pages/Order';
 import Vendor from './pages/Vendor';
-import Login from './pages/Login';
+import Profile from './pages/Profile';
+import Login from './pages/Login'; // keeping old login available on /login-old if needed, or replacing
 import VendorLogin from './pages/VendorLogin';
 import Register from './pages/Register';
-import Profile from './pages/Profile';
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/order" element={<Order />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/vendor" element={<Vendor />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/vendor-login" element={<VendorLogin />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/account" element={<Account />} />
+
+                {/* Existing Routes */}
+                <Route path="/order" element={<Order />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/vendor" element={<Vendor />} />
+                <Route path="/vendor-login" element={<VendorLogin />} />
+
+                {/* Redirect legacy /login to new /auth or keep separate? 
+            For now, let's keep them accessible but /auth is the new one. 
+        */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
 export default App;
