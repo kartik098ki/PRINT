@@ -122,8 +122,8 @@ app.get('/api/orders', async (req, res) => {
         // Parse JSON fields
         const orders = rows.map(o => ({
             ...o,
-            files: JSON.parse(o.files || '[]'),
-            settings: JSON.parse(o.settings || '{}')
+            files: typeof o.files === 'string' ? JSON.parse(o.files || '[]') : o.files,
+            settings: typeof o.settings === 'string' ? JSON.parse(o.settings || '{}') : o.settings
         }));
         res.json(orders);
     } catch (err) {
@@ -134,36 +134,55 @@ app.get('/api/orders', async (req, res) => {
 });
 
 // 4. CREATE ORDER
-// 4. CREATE ORDER
 app.post('/api/orders', async (req, res) => {
     console.log('[POST] /api/orders', req.body);
-    const { userId, userEmail, files, settings, totalAmount, otp } = req.body;
+    const { userId, userEmail, files, settings, totalAmount } = req.body;
 
     if (!files || totalAmount === undefined) {
-        console.error('Order creation failed: Missing required fields', { files, totalAmount });
-        return res.status(400).json({ error: 'Missing required fields (files or totalAmount)' });
+        return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const id = Date.now().toString();
 
-    const sql = `INSERT INTO orders (id, userId, userEmail, files, settings, totalAmount, status, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-    const params = [
-        id,
-        userId,
-        userEmail,
-        JSON.stringify(files),
-        JSON.stringify(settings),
-        totalAmount,
-        'paid',
-        otp
-    ];
+    // Unique OTP Generation
+    let otp;
+    let isUnique = false;
+    let attempts = 0;
 
     try {
+        while (!isUnique && attempts < 5) {
+            otp = Math.floor(1000 + Math.random() * 9000).toString();
+            // Check if OTP exists in active orders (not collected)
+            // Using a simple check against recent orders for now, or just all active.
+            // Ideally we'd use a dedicated table or unique constraint, but for this scale a query is fine.
+            const checkSql = `SELECT id FROM orders WHERE otp = ? AND status != 'collected'`;
+            const result = await db.query(checkSql, [otp]);
+            if (result.rows.length === 0) {
+                isUnique = true;
+            }
+            attempts++;
+        }
+
+        if (!isUnique) throw new Error("Could not generate unique OTP");
+
+        const sql = `INSERT INTO orders (id, userId, userEmail, files, settings, totalAmount, status, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        const params = [
+            id,
+            userId,
+            userEmail,
+            JSON.stringify(files),
+            JSON.stringify(settings),
+            totalAmount,
+            'paid',
+            otp
+        ];
+
         await db.query(sql, params);
         console.log('Order created successfully:', id);
         res.json({
             id, userId, userEmail, files, settings, totalAmount, status: 'paid', otp, created_at: new Date().toISOString()
         });
+
     } catch (err) {
         console.error('Order Insert Error:', err.message);
         return res.status(500).json({ error: err.message });

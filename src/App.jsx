@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Login from './pages/Login'; // keeping old login available on /login-old if needed, or replacing
 import VendorLogin from './pages/VendorLogin';
 import Register from './pages/Register';
+import OrdersPage from './pages/OrdersPage';
 
 function App() {
     return (
@@ -28,6 +29,7 @@ function App() {
                 {/* Redirect legacy /login to new /auth or keep separate? 
             For now, let's keep them accessible but /auth is the new one. 
         */}
+                <Route path="/orders" element={<OrdersPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
             </Routes>

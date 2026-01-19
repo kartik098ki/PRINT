@@ -22,18 +22,16 @@ export const OrderProvider = ({ children }) => {
 
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-    // FETCH ORDERS (Live Sync / Polling)
+    // FETCH ORDERS (Polling)
     const fetchOrders = async () => {
         try {
-            // Vendors see ALL orders (no userId filter), Users see only theirs
-            // But currently the API handles filtering via query param if passed.
-            // For Vendor Dashboard (where this context is used), we want everything if vendor.
-            // For User Profile, we might want only theirs.
-            // For now, let's fetch ALL orders and filter client side if needed, OR relies on role.
+            // Filter by userId if user is logged in (handled by server query param)
+            let url = '/api/orders';
+            if (user && user.role !== 'vendor') {
+                url += `?userId=${user.id}`;
+            }
 
-            // To simplify: The Backend /api/orders returns ALL orders by default.
-            // We can filter in the UI.
-            const res = await fetch('/api/orders');
+            const res = await fetch(url);
             if (!res.ok) throw new Error(res.statusText);
 
             // Check content type to avoid JSON parse errors on 404 HTML responses
@@ -57,7 +55,7 @@ export const OrderProvider = ({ children }) => {
         // Poll every 3 seconds for "Live" dashboard feeling
         const interval = setInterval(fetchOrders, 3000);
         return () => clearInterval(interval);
-    }, []); // Run once on mount + interval
+    }, [user]); // Re-run if user changes
 
     const addFile = (file) => {
         const fileObj = {
@@ -80,14 +78,13 @@ export const OrderProvider = ({ children }) => {
             name: item.name,
             type: 'stationery',
             price: item.price,
-            size: 0, // Placeholder
+            size: 0,
             timestamp: Date.now()
         };
         setCurrentOrder(prev => ({
             ...prev,
             files: [...prev.files, itemObj]
         }));
-        // Optional: Trigger a toast or vibration here if possible
     };
 
     const removeFile = (fileId) => {
@@ -104,20 +101,9 @@ export const OrderProvider = ({ children }) => {
         }));
     };
 
-    const generateUniqueOtp = (currentOrders) => {
-        let newOtp;
-        let isUnique = false;
-        const activeOtps = new Set(currentOrders.map(o => o.otp));
-        while (!isUnique) {
-            newOtp = Math.floor(1000 + Math.random() * 9000).toString();
-            if (!activeOtps.has(newOtp)) isUnique = true;
-        }
-        return newOtp;
-    };
-
     const placeOrder = async (totalAmount) => {
         setIsProcessingPayment(true);
-        // Sanitize files to only send metadata (JSON.stringify keeps File objects empty anyway, but this is cleaner)
+
         const filesData = currentOrder.files.map(f => ({
             id: f.id,
             name: f.name,
@@ -125,14 +111,13 @@ export const OrderProvider = ({ children }) => {
             type: f.type
         }));
 
-        const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
         const orderData = {
             userId: user?.id,
             userEmail: user?.email,
             files: filesData,
             settings: currentOrder.settings,
             totalAmount: totalAmount || 0,
-            otp: newOtp
+            // OTP is generated on Server Side
         };
 
         try {
@@ -148,43 +133,40 @@ export const OrderProvider = ({ children }) => {
             if (!contentType || !contentType.includes("application/json")) {
                 const text = await response.text();
                 console.error("Received non-JSON response:", text.substring(0, 100)); // Log first 100 chars
-                throw new Error("Backend not reachable (Received HTML instead of JSON). Are you on Netlify? Netlify only hosts the frontend.");
+                throw new Error("Backend not reachable (Received HTML instead of JSON).");
             }
 
             const result = await response.json();
 
             if (response.ok) {
                 // Clear order on success
+                // Optimistically add to list
                 setOrders(prev => [result, ...prev]);
+
                 setCurrentOrder({ files: [], settings: { copies: 1, color: false, doubleSided: false } });
                 setIsProcessingPayment(false);
-                return { success: true, otp: newOtp };
+                return { success: true, otp: result.otp };
             } else {
                 throw new Error(result.error || "Order failed");
             }
         } catch (err) {
             console.error("Place Order Error:", err);
-            // Re-throw so the UI can display the stack trace
+            setIsProcessingPayment(false);
             throw err;
         }
     };
 
     const calculateTotal = () => {
         let total = 0;
-
-        // Calculate Print Cost
         const printFiles = currentOrder.files.filter(f => f.type !== 'stationery');
         if (printFiles.length > 0) {
             const baseRate = currentOrder.settings.color ? 10 : 2;
             total += printFiles.length * currentOrder.settings.copies * baseRate;
         }
-
-        // Calculate Stationery Cost
         const stationeryItems = currentOrder.files.filter(f => f.type === 'stationery');
         stationeryItems.forEach(item => {
             total += (item.price || 0);
         });
-
         return total;
     };
 
@@ -234,7 +216,8 @@ export const OrderProvider = ({ children }) => {
             calculateTotal,
             verifyOrderOtp,
             markAsPrinted,
-            markAsCollected
+            markAsCollected,
+            isProcessingPayment
         }}>
             {children}
         </OrderContext.Provider>

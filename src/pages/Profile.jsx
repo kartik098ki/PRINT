@@ -67,9 +67,9 @@ export default function Profile() {
                         <button className="flex-1 bg-white text-black py-2.5 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors">
                             + Add Money
                         </button>
-                        <button className="flex-1 bg-white/10 text-white py-2.5 rounded-xl text-xs font-bold hover:bg-white/20 transition-colors backdrop-blur-md border border-white/10">
+                        <Link to="/orders" className="flex-1 bg-white/10 text-white py-2.5 rounded-xl text-xs font-bold hover:bg-white/20 transition-colors backdrop-blur-md border border-white/10 flex items-center justify-center">
                             History
-                        </button>
+                        </Link>
                     </div>
                     {/* Decorative */}
                     <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-green-500/30 rounded-full blur-3xl pointer-events-none" />
