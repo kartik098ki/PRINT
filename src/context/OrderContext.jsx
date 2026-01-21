@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { getApiUrl } from '../config';
+import { getPdfPageCount } from '../utils/pdfUtils';
 
 const OrderContext = createContext();
 
@@ -58,11 +59,16 @@ export const OrderProvider = ({ children }) => {
         return () => clearInterval(interval);
     }, [user]); // Re-run if user changes
 
-    const addFile = (file) => {
+    const addFile = async (file) => {
         // Validation: No Videos
         if (file.type.startsWith('video/')) {
             alert("Video files are not supported. Please upload Images (JPG, PNG) or PDFs.");
             return;
+        }
+
+        let detectedPageCount = 1;
+        if (file.type === 'application/pdf') {
+            detectedPageCount = await getPdfPageCount(file);
         }
 
         const reader = new FileReader();
@@ -74,7 +80,7 @@ export const OrderProvider = ({ children }) => {
                 size: file.size,
                 previewUrl: null, // Could use reader.result for preview too
                 dataVal: reader.result, // Base64 Data URL
-                pageCount: 1, // Default to 1 page
+                pageCount: detectedPageCount,
                 timestamp: Date.now()
             };
             setCurrentOrder(prev => ({
