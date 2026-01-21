@@ -23,7 +23,14 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // 0. HEALTH CHECK
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', time: new Date().toISOString() });
+    // Helper to check what DB we are using
+    const isProd = !!process.env.DATABASE_URL;
+    res.json({
+        status: 'ok',
+        time: new Date().toISOString(),
+        dbType: isProd ? 'POSTGRES (Neon)' : 'SQLITE (Temporary/Local)',
+        warning: isProd ? null : "Data will be lost on restart. Set DATABASE_URL to fix."
+    });
 });
 
 // 1. REGISTER USER

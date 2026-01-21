@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ArrowRight, Loader2, Sparkles, Shield, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Loader2, Mail, Lock, Shield } from 'lucide-react';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -17,96 +16,124 @@ export default function Login() {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-        try {
-            // STRICTLY Student Login Only
-            const targetRole = 'user';
-            const user = await login(email, password, targetRole);
 
-            // Redirect to home if successful
+        try {
+            await login(email, password, 'user');
             navigate('/');
         } catch (err) {
-            setError('Invalid email or password');
+            console.error(err);
+            if (err.includes && err.includes('Unexpected token')) {
+                setError("Server connection failed. Please check backend.");
+            } else {
+                setError(typeof err === 'string' ? err : 'Invalid credentials');
+            }
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center p-6 font-sans relative overflow-hidden">
-            {/* Background Blobs */}
-            <div className="absolute top-[-100px] right-[-100px] w-64 h-64 bg-green-200/50 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-[-100px] left-[-100px] w-64 h-64 bg-blue-200/50 rounded-full blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 relative overflow-hidden text-gray-900 font-sans">
+
+            {/* Background Decorations */}
+            <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-400/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-400/20 rounded-full blur-[100px] pointer-events-none" />
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-xl border border-white/50 relative z-10 w-full max-w-sm mx-auto"
+                className="w-full max-w-sm z-10"
             >
-                <div className="mb-8 text-center">
-                    <div className="w-12 h-12 bg-black text-white rounded-xl flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-lg">
+                {/* Brand Header */}
+                <div className="text-center mb-10">
+                    <div className="w-16 h-16 bg-black text-white rounded-2xl flex items-center justify-center font-bold text-3xl tracking-tighter shadow-xl shadow-black/20 mx-auto mb-6 rotate-3">
                         J.
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-                    <p className="text-gray-500 text-sm">Sign in to continue printing.</p>
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome Back.</h1>
+                    <p className="text-gray-500 font-medium text-sm">Sign in to access your print history.</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-3">
-                        <div className="relative group">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" size={18} />
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Student Email"
-                                className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 text-gray-900 font-medium focus:bg-white focus:border-black/10 focus:ring-4 focus:ring-black/5 outline-none transition-all"
-                                required
-                            />
-                        </div>
-                        <div className="relative group">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" size={18} />
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Password"
-                                className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 text-gray-900 font-medium focus:bg-white focus:border-black/10 focus:ring-4 focus:ring-black/5 outline-none transition-all"
-                                required
-                            />
-                        </div>
-                    </div>
+                {/* Login Card */}
+                <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[32px] shadow-2xl shadow-gray-200/50 border border-white/50">
 
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="text-red-500 text-xs font-bold text-center bg-red-50 py-2 rounded-xl"
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-500 ml-1 uppercase tracking-wider">Email Address</label>
+                            <div className="relative group">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" size={18} />
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="student@jiit.ac.in"
+                                    className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl px-11 py-4 text-sm font-bold placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-black/10 focus:ring-4 focus:ring-black/5 transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-500 ml-1 uppercase tracking-wider">Password</label>
+                            <div className="relative group">
+                                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" size={18} />
+                                <input
+                                    type="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl px-11 py-4 text-sm font-bold placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-black/10 focus:ring-4 focus:ring-black/5 transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs font-medium pt-1">
+                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600">
+                                <div className="w-4 h-4 rounded border border-gray-300 flex items-center justify-center bg-white group-hover:border-black transition-colors">
+                                    {/* Mock Checkbox */}
+                                </div>
+                                Remember me
+                            </label>
+                            <a href="#" className="text-blue-600 hover:text-blue-800 transition-colors">Forgot Password?</a>
+                        </div>
+
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="bg-red-50 text-red-600 text-xs font-bold p-4 rounded-xl flex items-start gap-2 leading-relaxed"
+                            >
+                                <span className="mt-0.5 select-none">⚠️</span>
+                                <div>{error}</div>
+                            </motion.div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full bg-black text-white py-4 rounded-2xl font-bold text-sm shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 flex items-center justify-center gap-2"
                         >
-                            {error}
-                        </motion.div>
-                    )}
+                            {isLoading ? <Loader2 className="animate-spin" size={20} /> : <span className="flex items-center gap-2">Sign In <ArrowRight size={16} /></span>}
+                        </button>
+                    </form>
 
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-black text-white font-bold py-4 rounded-2xl text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-black/20"
-                    >
-                        {isLoading ? <Loader2 className="animate-spin mx-auto" /> : 'Sign In'}
-                    </button>
+                </div>
 
-                    <div className="text-center pt-2">
-                        <span className="text-gray-500 text-sm font-medium">New here? </span>
-                        <Link to="/register" className="text-black font-bold text-sm hover:underline">Create Account</Link>
+                <div className="text-center mt-8">
+                    <p className="text-gray-500 text-sm font-medium">
+                        New around here?{' '}
+                        <Link to="/register" className="text-black font-bold hover:underline">
+                            Create Account
+                        </Link>
+                    </p>
+                    <div className="mt-4">
+                        <Link to="/vendor-login" className="inline-block text-[10px] text-gray-400 font-bold uppercase tracking-wider hover:text-gray-600 transition-colors px-3 py-1 rounded-full border border-transparent hover:border-gray-200">
+                            Vendor Access
+                        </Link>
                     </div>
-                </form>
-            </motion.div>
+                </div>
 
-            {/* Vendor Link */}
-            <div className="mt-8 text-center relative z-10">
-                <Link to="/vendor-login" className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-black transition-colors px-4 py-2 rounded-full hover:bg-white/50">
-                    <Shield size={12} /> Vendor / Admin Access
-                </Link>
-            </div>
+            </motion.div>
         </div>
     );
 }

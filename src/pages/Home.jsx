@@ -168,9 +168,9 @@ export default function Home() {
           <div className="relative z-10">
             <h4 className="font-bold text-lg mb-1">Need Help?</h4>
             <p className="text-gray-400 text-sm mb-4">Contact the shop directly.</p>
-            <button className="bg-white text-black px-6 py-2 rounded-full text-xs font-bold hover:scale-105 transition-transform">
+            <a href="https://chat.whatsapp.com/KnC17YZEiB15oNV5S3bTO6" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-black px-6 py-2 rounded-full text-xs font-bold hover:scale-105 transition-transform">
               Chat with Verified Vendor
-            </button>
+            </a>
           </div>
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-gray-800 to-transparent opacity-50"></div>
         </div>
