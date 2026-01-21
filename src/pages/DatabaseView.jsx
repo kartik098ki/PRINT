@@ -6,6 +6,7 @@ export default function DatabaseView() {
     const [users, setUsers] = useState([]);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('users');
 
     const fetchData = async () => {
@@ -18,8 +19,10 @@ export default function DatabaseView() {
 
             if (usersRes.ok) setUsers(await usersRes.json());
             if (ordersRes.ok) setOrders(await ordersRes.json());
+            setError(null);
         } catch (error) {
             console.error("Failed to fetch data:", error);
+            setError(error.message);
         } finally {
             setLoading(false);
         }
@@ -68,7 +71,15 @@ export default function DatabaseView() {
                     </button>
                 </div>
 
-                {loading && users.length === 0 ? (
+                {error ? (
+                    <div className="bg-red-50 text-red-600 p-8 rounded-xl text-center border border-red-200">
+                        <h3 className="font-bold text-lg mb-2">Connection Failed</h3>
+                        <p className="font-mono text-sm mb-4">{error}</p>
+                        <button onClick={fetchData} className="px-4 py-2 bg-red-100 rounded-lg hover:bg-red-200 font-bold transition-colors">
+                            Retry Connection
+                        </button>
+                    </div>
+                ) : loading && users.length === 0 ? (
                     <div className="text-center py-20 text-gray-500">Loading database...</div>
                 ) : (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
