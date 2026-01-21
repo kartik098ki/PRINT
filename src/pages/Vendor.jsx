@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useOrder } from '../context/OrderContext';
 import { Search, CheckCircle, Clock, Download, Printer, Check, X, Bell, RefreshCw, TrendingUp, FileText, User, LogOut, Shield, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,10 +15,36 @@ export default function Vendor() {
     const [verificationResult, setVerificationResult] = useState(null);
     const [activeTab, setActiveTab] = useState('queue'); // queue, completed
     const [lastUpdated, setLastUpdated] = useState(new Date());
+    const [newOrderAlert, setNewOrderAlert] = useState(null);
+    const audioRef = useRef(null);
+
+    // Track previous orders to detect new ones
+    const prevOrdersRef = useRef(orders.length);
+
+    useEffect(() => {
+        // Init audio
+        audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Simple ding sound
+    }, []);
 
     useEffect(() => {
         setLastUpdated(new Date());
-    }, [ordersList]); // Update timestamp when orders change (or are refetched)
+
+        const prevCount = prevOrdersRef.current;
+        if (orders.length > prevCount) {
+            // New Order Detected!
+            const latest = orders[0]; // Assuming sorted DESC
+            setNewOrderAlert(`New Order Received! #${latest.otp}`);
+
+            // Play Sound
+            if (audioRef.current) {
+                audioRef.current.play().catch(e => console.log("Audio play failed (interaction needed first):", e));
+            }
+
+            // Clear alert after 5s
+            setTimeout(() => setNewOrderAlert(null), 5000);
+        }
+        prevOrdersRef.current = orders.length;
+    }, [orders]);
 
     const handleVerify = (e) => {
         e.preventDefault();
@@ -110,6 +136,21 @@ export default function Vendor() {
                     </div>
                 </div>
             </div>
+
+            {/* New Order Alert Toast */}
+            <AnimatePresence>
+                {newOrderAlert && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50 }}
+                        animate={{ opacity: 1, y: 20 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        className="fixed top-0 left-1/2 transform -translate-x-1/2 z-50 bg-black text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-3 font-bold border border-gray-800"
+                    >
+                        <Bell className="animate-bounce text-orange-500" />
+                        {newOrderAlert}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <div className="container mx-auto max-w-5xl p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
