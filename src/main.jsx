@@ -6,17 +6,20 @@ import { OrderProvider } from './context/OrderContext';
 
 // import { AuthProvider } from './context/AuthContext'; // Replaced by Neon
 import { ToastProvider } from './components/Toast';
-import { NeonAuthUIProvider } from '@neondatabase/neon-js/auth/react';
-import { auth } from './lib/auth';
+// import { NeonAuthUIProvider } from '@neondatabase/neon-js/auth/react';
+// import { auth } from './lib/auth';
+import { AuthProvider } from './context/AuthContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <NeonAuthUIProvider auth={auth}>
+    {/* <NeonAuthUIProvider auth={auth}> */}
+    <AuthProvider>
       <OrderProvider>
         <ToastProvider>
           <App />
         </ToastProvider>
       </OrderProvider>
-    </NeonAuthUIProvider>
+    </AuthProvider>
+    {/* </NeonAuthUIProvider> */}
   </StrictMode>,
 )

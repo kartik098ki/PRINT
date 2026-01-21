@@ -89,6 +89,9 @@ export default function Vendor() {
                             <p className="text-[10px] text-gray-400 font-medium">JIIT SECTOR 128 • LOGGED IN</p>
                         </div>
                     </div>
+                    <button onClick={() => { fetchOrders && fetchOrders(); window.location.reload(); }} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-green-600" title="Force Refresh">
+                        <RefreshCw size={20} />
+                    </button>
                     <button onClick={handleLogout} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-red-600">
                         <LogOut size={20} />
                     </button>
@@ -249,19 +252,33 @@ function TabButton({ children, active, onClick }) {
 }
 
 function OrderCard({ order, onPrint, onCollect }) {
-    const downloadFile = () => {
-        // Mock download
-        const text = `Mock File Content for Order #${order.id}\nUser: ${order.userEmail}\nFiles: ${order.files.map(f => f.name).join(', ')}`;
-        const blob = new Blob([text], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `jprint_order_${order.id}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
+    const handleDownloadAll = () => {
+        order.files.forEach(file => {
+            if (file.dataVal) {
+                const link = document.createElement('a');
+                link.href = file.dataVal;
+                link.download = file.name || `download_${Date.now()}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert(`File ${file.name} is missing content.`);
+            }
+        });
+    };
+
+    const handleDownloadSingle = (file) => {
+        if (file.dataVal) {
+            const link = document.createElement('a');
+            link.href = file.dataVal;
+            link.download = file.name || `download_${Date.now()}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            alert("File content missing.");
+        }
+    };
 
     return (
         <motion.div
@@ -295,12 +312,20 @@ function OrderCard({ order, onPrint, onCollect }) {
 
                         <div className="flex flex-wrap gap-2">
                             {order.files.map((file, i) => (
-                                <div key={i} className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-2 py-1 rounded-lg text-xs font-medium border border-gray-100">
-                                    <FileText size={12} /> {file.name}
+                                <div key={i} className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-2 py-1 rounded-lg text-xs font-medium border border-gray-100 group/file">
+                                    <FileText size={12} />
+                                    <span className="truncate max-w-[100px]">{file.name}</span>
                                     <span className="text-gray-400">|</span>
                                     <span className="text-[10px] uppercase font-bold text-gray-400">
                                         {(file.size / 1024 / 1024).toFixed(1)}MB
                                     </span>
+                                    <button
+                                        onClick={() => handleDownloadSingle(file)}
+                                        className="ml-1 p-1 hover:bg-gray-200 rounded text-gray-500 hover:text-black transition-colors"
+                                        title="Download this file"
+                                    >
+                                        <Download size={10} />
+                                    </button>
                                 </div>
                             ))}
                         </div>
@@ -314,9 +339,9 @@ function OrderCard({ order, onPrint, onCollect }) {
                     </div>
 
                     <button
-                        onClick={downloadFile}
+                        onClick={handleDownloadAll}
                         className="p-3 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
-                        title="Download Files"
+                        title="Download All Files"
                     >
                         <Download size={20} />
                     </button>

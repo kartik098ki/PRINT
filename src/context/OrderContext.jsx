@@ -1,4 +1,4 @@
-  import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
 const OrderContext = createContext();
@@ -58,18 +58,33 @@ export const OrderProvider = ({ children }) => {
     }, [user]); // Re-run if user changes
 
     const addFile = (file) => {
-        const fileObj = {
-            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            previewUrl: null,
-            timestamp: Date.now()
+        // Validation: No Videos
+        if (file.type.startsWith('video/')) {
+            alert("Video files are not supported. Please upload Images (JPG, PNG) or PDFs.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const fileObj = {
+                id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                previewUrl: null, // Could use reader.result for preview too
+                dataVal: reader.result, // Base64 Data URL
+                timestamp: Date.now()
+            };
+            setCurrentOrder(prev => ({
+                ...prev,
+                files: [...prev.files, fileObj]
+            }));
         };
-        setCurrentOrder(prev => ({
-            ...prev,
-            files: [...prev.files, fileObj]
-        }));
+        reader.onerror = () => {
+            console.error("Failed to read file");
+            alert("Failed to read file.");
+        };
+        reader.readAsDataURL(file);
     };
 
     const addStationeryItem = (item) => {
@@ -108,7 +123,8 @@ export const OrderProvider = ({ children }) => {
             id: f.id,
             name: f.name,
             size: f.size,
-            type: f.type
+            type: f.type,
+            dataVal: f.dataVal // Send the actual content
         }));
 
         const orderData = {

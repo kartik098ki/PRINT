@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 5002;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // DEBUG LOGGER
 app.use((req, res, next) => {
@@ -98,6 +98,17 @@ app.post('/api/login', async (req, res) => {
     } catch (err) {
         console.error('Login DB Error:', err.message);
         return res.status(500).json({ error: err.message });
+    }
+});
+
+// 2.5. GET ALL USERS (Admin/Debug)
+app.get('/api/users', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM users ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Get Users Error:', err.message);
+        res.status(500).json({ error: err.message });
     }
 });
 

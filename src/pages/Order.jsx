@@ -97,6 +97,7 @@ export default function Order() {
                                 <input
                                     type="file"
                                     multiple
+                                    accept="image/*,application/pdf"
                                     onChange={(e) => Array.from(e.target.files).forEach(addFile)}
                                     className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                 />
