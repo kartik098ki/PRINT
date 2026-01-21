@@ -20,6 +20,6 @@ const orderSchema = new mongoose.Schema({
     totalAmount: { type: Number, required: true },
     status: { type: String, enum: ['paid', 'printed', 'collected'], default: 'paid' },
     otp: { type: String, required: true, unique: true },
-}, { timestamps: true });
+}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
 module.exports = mongoose.model('Order', orderSchema);
