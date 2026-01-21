@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOrder } from '../context/OrderContext';
-import { Search, CheckCircle, Clock, Download, Printer, Check, X, Bell, RefreshCw, TrendingUp, FileText, User, LogOut, Shield } from 'lucide-react';
+import { Search, CheckCircle, Clock, Download, Printer, Check, X, Bell, RefreshCw, TrendingUp, FileText, User, LogOut, Shield, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import { Link, useNavigate } from 'react-router-dom';
@@ -97,12 +97,17 @@ export default function Vendor() {
                             <p className="text-[10px] text-gray-400 font-medium">JIIT SECTOR 128 • LOGGED IN</p>
                         </div>
                     </div>
-                    <button onClick={() => { fetchOrders && fetchOrders(); window.location.reload(); }} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-green-600" title="Force Refresh">
-                        <RefreshCw size={20} />
-                    </button>
-                    <button onClick={handleLogout} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-red-600">
-                        <LogOut size={20} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <Link to="/database" target="_blank" className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-600" title="Open Database View">
+                            <Database size={20} />
+                        </Link>
+                        <button onClick={() => { fetchOrders && fetchOrders(); window.location.reload(); }} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-green-600" title="Force Refresh">
+                            <RefreshCw size={20} />
+                        </button>
+                        <button onClick={handleLogout} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-red-600">
+                            <LogOut size={20} />
+                        </button>
+                    </div>
                 </div>
             </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, RefreshCw, Database, Table } from 'lucide-react';
+import { getApiUrl } from '../config';
 
 export default function DatabaseView() {
     const [users, setUsers] = useState([]);
@@ -11,8 +12,8 @@ export default function DatabaseView() {
         setLoading(true);
         try {
             const [usersRes, ordersRes] = await Promise.all([
-                fetch('/api/users'),
-                fetch('/api/orders')
+                fetch(getApiUrl('api/users')),
+                fetch(getApiUrl('api/orders'))
             ]);
 
             if (usersRes.ok) setUsers(await usersRes.json());
@@ -128,7 +129,7 @@ export default function DatabaseView() {
                                                 <td className="px-6 py-4 font-bold text-gray-900">₹{order.totalAmount}</td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${order.status === 'paid' ? 'bg-green-100 text-green-700' :
-                                                            order.status === 'collected' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                                                        order.status === 'collected' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
                                                         }`}>
                                                         {order.status}
                                                     </span>
