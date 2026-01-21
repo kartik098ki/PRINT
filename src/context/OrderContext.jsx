@@ -66,9 +66,9 @@ export const OrderProvider = ({ children }) => {
             return;
         }
 
-        let detectedPageCount = 1;
-        if (file.type === 'application/pdf') {
-            detectedPageCount = await getPdfPageCount(file);
+        if (file.type.startsWith('video/')) {
+            alert("Video files are not supported. Please upload Images (JPG, PNG) or PDFs.");
+            return;
         }
 
         const reader = new FileReader();
@@ -80,13 +80,21 @@ export const OrderProvider = ({ children }) => {
                 size: file.size,
                 previewUrl: null, // Could use reader.result for preview too
                 dataVal: reader.result, // Base64 Data URL
-                pageCount: detectedPageCount,
+                pageCount: file.type === 'application/pdf' ? 0 : 1, // 0 = Scanning, 1 = Default for images
                 timestamp: Date.now()
             };
+
             setCurrentOrder(prev => ({
                 ...prev,
                 files: [...prev.files, fileObj]
             }));
+
+            // Perform async processing for PDFs
+            if (file.type === 'application/pdf') {
+                getPdfPageCount(file).then(count => {
+                    updateFilePageCount(fileObj.id, count);
+                });
+            }
         };
         reader.onerror = () => {
             console.error("Failed to read file");

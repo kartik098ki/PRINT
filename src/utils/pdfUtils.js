@@ -1,7 +1,8 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-// Configure worker - use CDN for reliability without complex build setup
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+// Configure worker using local file resolved by Vite
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export const getPdfPageCount = async (file) => {
     try {

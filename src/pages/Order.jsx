@@ -131,23 +131,30 @@ export default function Order() {
                                         {file.type !== 'stationery' && (
                                             <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg ml-14">
                                                 <span className="text-xs font-bold text-gray-500 uppercase">Pages in file:</span>
-                                                <div className="flex items-center gap-3">
-                                                    <button
-                                                        onClick={() => updateFilePageCount(file.id, Math.max(1, (file.pageCount || 1) - 1))}
-                                                        className="w-6 h-6 bg-white rounded shadow-sm text-gray-600 flex items-center justify-center font-bold"
-                                                    >-</button>
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        value={file.pageCount || 1}
-                                                        onChange={(e) => updateFilePageCount(file.id, e.target.value)}
-                                                        className="w-10 text-center bg-transparent font-bold text-sm focus:outline-none"
-                                                    />
-                                                    <button
-                                                        onClick={() => updateFilePageCount(file.id, (file.pageCount || 1) + 1)}
-                                                        className="w-6 h-6 bg-white rounded shadow-sm text-gray-600 flex items-center justify-center font-bold"
-                                                    >+</button>
-                                                </div>
+                                                {file.pageCount === 0 ? (
+                                                    <div className="flex items-center gap-2 text-blue-600">
+                                                        <Loader2 className="animate-spin" size={16} />
+                                                        <span className="text-xs font-bold">Scanning...</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-3">
+                                                        <button
+                                                            onClick={() => updateFilePageCount(file.id, Math.max(1, (file.pageCount || 1) - 1))}
+                                                            className="w-6 h-6 bg-white rounded shadow-sm text-gray-600 flex items-center justify-center font-bold"
+                                                        >-</button>
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            value={file.pageCount || 1}
+                                                            onChange={(e) => updateFilePageCount(file.id, e.target.value)}
+                                                            className="w-10 text-center bg-transparent font-bold text-sm focus:outline-none"
+                                                        />
+                                                        <button
+                                                            onClick={() => updateFilePageCount(file.id, (file.pageCount || 1) + 1)}
+                                                            className="w-6 h-6 bg-white rounded shadow-sm text-gray-600 flex items-center justify-center font-bold"
+                                                        >+</button>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
