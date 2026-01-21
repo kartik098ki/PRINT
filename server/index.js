@@ -19,14 +19,23 @@ app.use(express.json({ limit: '50mb' }));
 // Database Connection
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/jprint_local');
+        const mongoUri = process.env.MONGO_URI;
+        if (!mongoUri) {
+            console.warn("⚠️ MONGO_URI is missing. App will crash on DB operations.");
+        }
+        const conn = await mongoose.connect(mongoUri || 'mongodb://127.0.0.1:27017/jprint_local');
         console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
         console.error(`❌ MongoDB Connection Error: ${error.message}`);
-        // Do not exit, allow retry or local fallback handling if desired, but for MERN we need DB.
     }
 };
 connectDB();
+
+// Serve Static Files (Frontend) - CRITICAL for Render Single Service
+const path = require('path');
+// Go up one level to root, then dist (assuming build runs in root)
+const distPath = path.join(__dirname, '..', 'dist');
+app.use(express.static(distPath));
 
 // --- AUTH MIDDLEWARE ---
 const protect = async (req, res, next) => {
@@ -181,6 +190,10 @@ app.patch('/api/orders/:id/status', protect, vendor, async (req, res) => {
     }
 });
 
+// Serve React App for all non-API routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
