@@ -138,22 +138,11 @@ export default function Order() {
                                                         <span className="text-xs font-bold">Scanning...</span>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center gap-3">
-                                                        <button
-                                                            onClick={() => updateFilePageCount(file.id, Math.max(1, (file.pageCount || 1) - 1))}
-                                                            className="w-6 h-6 bg-white rounded shadow-sm text-gray-600 flex items-center justify-center font-bold"
-                                                        >-</button>
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            value={file.pageCount || 1}
-                                                            onChange={(e) => updateFilePageCount(file.id, e.target.value)}
-                                                            className="w-10 text-center bg-transparent font-bold text-sm focus:outline-none"
-                                                        />
-                                                        <button
-                                                            onClick={() => updateFilePageCount(file.id, (file.pageCount || 1) + 1)}
-                                                            className="w-6 h-6 bg-white rounded shadow-sm text-gray-600 flex items-center justify-center font-bold"
-                                                        >+</button>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-gray-900 text-sm bg-gray-100 px-3 py-1 rounded-md border border-gray-200">
+                                                            {file.pageCount || 1}
+                                                        </span>
+                                                        <span className="text-[10px] uppercase font-bold text-gray-400">Pages detected</span>
                                                     </div>
                                                 )}
                                             </div>
