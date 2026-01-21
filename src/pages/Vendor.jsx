@@ -16,6 +16,7 @@ export default function Vendor() {
     const [activeTab, setActiveTab] = useState('queue'); // queue, completed
     const [lastUpdated, setLastUpdated] = useState(new Date());
     const [newOrderAlert, setNewOrderAlert] = useState(null);
+    const [searchQuery, setSearchQuery] = useState(''); // Search State
     const audioRef = useRef(null);
 
     // Track previous orders to detect new ones
@@ -69,7 +70,15 @@ export default function Vendor() {
 
     const queueOrders = orders.filter(o => o.status === 'paid' || o.status === 'printed');
     const completedOrders = orders.filter(o => o.status === 'collected');
-    const displayedOrders = activeTab === 'queue' ? queueOrders : completedOrders;
+
+    // Filter logic: If searching, search ALL orders. Else use tabs.
+    const displayedOrders = searchQuery
+        ? orders.filter(o =>
+            o.otp.includes(searchQuery) ||
+            o.id.includes(searchQuery) ||
+            (o.userEmail && o.userEmail.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
+        : (activeTab === 'queue' ? queueOrders : completedOrders);
 
     // Stats Check
     const totalEarnings = orders.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
@@ -231,13 +240,27 @@ export default function Vendor() {
 
                 {/* Tabs & List */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[500px]">
-                    <div className="flex border-b border-gray-100 px-6 pt-2">
-                        <TabButton active={activeTab === 'queue'} onClick={() => setActiveTab('queue')}>
-                            Active Queue <span className="ml-2 bg-black text-white text-[10px] py-0.5 px-2 rounded-full">{queueOrders.length}</span>
-                        </TabButton>
-                        <TabButton active={activeTab === 'completed'} onClick={() => setActiveTab('completed')}>
-                            Order History
-                        </TabButton>
+                    <div className="flex border-b border-gray-100 px-6 pt-2 items-center justify-between">
+                        <div className="flex">
+                            <TabButton active={activeTab === 'queue' && !searchQuery} onClick={() => { setActiveTab('queue'); setSearchQuery(''); }}>
+                                Active Queue <span className="ml-2 bg-black text-white text-[10px] py-0.5 px-2 rounded-full">{queueOrders.length}</span>
+                            </TabButton>
+                            <TabButton active={activeTab === 'completed' && !searchQuery} onClick={() => { setActiveTab('completed'); setSearchQuery(''); }}>
+                                Order History
+                            </TabButton>
+                        </div>
+
+                        {/* Search Input */}
+                        <div className="mr-6 py-2 relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Search OTP, Name..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-9 pr-4 py-2 bg-gray-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-black/5 outline-none w-48 transition-all focus:w-64"
+                            />
+                        </div>
                     </div>
 
                     <div className="p-6 bg-gray-50/50">
