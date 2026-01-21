@@ -19,6 +19,17 @@ app.use((req, res, next) => {
 const path = require('path');
 // Go up one level to root, then dist (assuming build runs in root)
 const distPath = path.join(__dirname, '..', 'dist');
+const fs = require('fs');
+
+if (process.env.NODE_ENV === 'production') {
+    if (fs.existsSync(path.join(distPath, 'index.html'))) {
+        console.log("✅ Static Assets Found at:", distPath);
+    } else {
+        console.error("❌ CRTICAL: Static Assets MISSING at:", distPath);
+        console.error("   Did you run 'npm run build'?");
+    }
+}
+
 app.use(express.static(distPath));
 
 // --- ROUTES ---
