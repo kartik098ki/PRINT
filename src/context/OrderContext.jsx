@@ -8,7 +8,7 @@ const OrderContext = createContext();
 export const useOrder = () => useContext(OrderContext);
 
 export const OrderProvider = ({ children }) => {
-    const { user } = useAuth();
+    const { user, getAuthHeaders } = useAuth();
     const [orders, setOrders] = useState([]);
 
     // Order Creation State
@@ -33,7 +33,12 @@ export const OrderProvider = ({ children }) => {
                 url += `?userId=${user.id}`;
             }
 
-            const res = await fetch(url);
+            const res = await fetch(url, { headers: getAuthHeaders() });
+            if (res.status === 401) {
+                // Token expired or invalid
+                console.warn("Auth failed, not fetching orders");
+                return;
+            }
             if (!res.ok) throw new Error(res.statusText);
 
             // Check content type to avoid JSON parse errors on 404 HTML responses
@@ -170,7 +175,7 @@ export const OrderProvider = ({ children }) => {
 
             const response = await fetch(getApiUrl('api/orders'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(orderData)
             });
 
@@ -234,22 +239,25 @@ export const OrderProvider = ({ children }) => {
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'printed' } : o);
         setOrders(updated);
 
-        await fetch(getApiUrl(`api/orders/${orderId}`), {
+        const res = await fetch(getApiUrl(`api/orders/${orderId}/status`), {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ status: 'printed' })
         });
+        // Reload to sync
+        fetchOrders();
     };
 
     const markAsCollected = async (orderId) => {
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'collected' } : o);
         setOrders(updated);
 
-        await fetch(getApiUrl(`api/orders/${orderId}`), {
+        const res = await fetch(getApiUrl(`api/orders/${orderId}/status`), {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ status: 'collected' })
         });
+        fetchOrders();
     };
 
     return (
