@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { getApiUrl } from '../config';
 
 const OrderContext = createContext();
 
@@ -26,7 +27,7 @@ export const OrderProvider = ({ children }) => {
     const fetchOrders = async () => {
         try {
             // Filter by userId if user is logged in (handled by server query param)
-            let url = '/api/orders';
+            let url = getApiUrl('api/orders');
             if (user && user.role !== 'vendor') {
                 url += `?userId=${user.id}`;
             }
@@ -139,7 +140,7 @@ export const OrderProvider = ({ children }) => {
         try {
             console.log("Sending Order Data:", orderData);
 
-            const response = await fetch('/api/orders', {
+            const response = await fetch(getApiUrl('api/orders'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
@@ -202,7 +203,7 @@ export const OrderProvider = ({ children }) => {
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'printed' } : o);
         setOrders(updated);
 
-        await fetch(`/api/orders/${orderId}`, {
+        await fetch(getApiUrl(`api/orders/${orderId}`), {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'printed' })
@@ -213,7 +214,7 @@ export const OrderProvider = ({ children }) => {
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'collected' } : o);
         setOrders(updated);
 
-        await fetch(`/api/orders/${orderId}`, {
+        await fetch(getApiUrl(`api/orders/${orderId}`), {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'collected' })
