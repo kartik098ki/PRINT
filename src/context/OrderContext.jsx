@@ -149,8 +149,9 @@ export const OrderProvider = ({ children }) => {
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
                 const text = await response.text();
-                console.error("Received non-JSON response:", text.substring(0, 100)); // Log first 100 chars
-                throw new Error("Backend not reachable (Received HTML instead of JSON).");
+                // Check if we are accidentally hitting the frontend (HTML response)
+                console.error("Received non-JSON response:", text.substring(0, 100));
+                throw new Error("Backend connection failed. Please check if VITE_API_URL is set in Vercel settings. The React app is serving HTML instead of reaching the API.");
             }
 
             const result = await response.json();

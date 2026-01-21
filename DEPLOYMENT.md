@@ -14,7 +14,7 @@ This guide helps you deploy JPRINT for **free** while ensuring it runs smoothly.
 ## 🚀 Deployment Stack
 1.  **Database**: **Neon** (PostgreSQL) - Free, Fast, Scalable.
 2.  **Backend**: **Render** (Node.js) - Free Web Service.
-3.  **Frontend**: **Netlify** (React) - Free, High Performance (CDN).
+3.  **Frontend**: **Vercel** or **Netlify** (React) - Free, High Performance (CDN).
 
 ---
 
@@ -55,6 +55,17 @@ This guide helps you deploy JPRINT for **free** while ensuring it runs smoothly.
     *   *(Example: `https://jprint-api.onrender.com`)* - **No trailing slash**.
 6.  Click **Deploy**.
 
+## Step 3a: Alternative Frontend (Vercel)
+If you prefer Vercel (or already deployed there):
+1.  Go to [Vercel.com](https://vercel.com) -> New Project.
+2.  Import your `PRINT` repo.
+3.  **Framework Preset**: Vite (should contain `npm run build`).
+4.  **Environment Variables**:
+    *   Key: `VITE_API_URL`
+    *   Value: *(Paste your Render Service URL)* (e.g., `https://jprint-api.onrender.com`)
+5.  Click **Deploy**.
+    *   *Note: If you see "Backend connection failed" error, you forgot Step 4.*
+
 ## Step 4: Verification
 1.  Open your **Netlify URL** (e.g., `https://jprint.netlify.app`).
 2.  Try to **Register/Login**. (This tests the connection to Render + Neon).
@@ -64,6 +75,7 @@ This guide helps you deploy JPRINT for **free** while ensuring it runs smoothly.
 ---
 
 ### Troubleshooting
-- **Frontend 404 on API**: Check if `VITE_API_URL` is set correctly in Netlify.
+- **Frontend 404 on API**: Check if `VITE_API_URL` is set correctly in Netlify/Vercel.
+    - **Specific Vercel Fix**: Go to Settings -> Environment Variables. Add `VITE_API_URL` = `https://your-render-app.onrender.com`. Redeploy.
 - **Database Error**: Check if `DATABASE_URL` is set correctly in Render.
 - **Slow First Load**: Render's free tier "sleeps" after inactivity. The first request might take 50 seconds to wake up. This is normal for free tier.
