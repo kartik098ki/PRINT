@@ -177,6 +177,14 @@ export default function Home() {
 
       </div>
 
+      {/* Footer */}
+      <div className="py-6 text-center">
+        <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">Built for JIIT Student</p>
+        <p className="text-xs font-medium text-gray-500 flex items-center justify-center gap-1">
+          Made by <span className="text-gray-900 font-bold">Kartik Guleria</span>
+        </p>
+      </div>
+
     </div>
   );
 }
