@@ -16,6 +16,11 @@ export default function Home() {
     // User said "just add to cart". Let's show a floating "Go to Cart" button.
   };
 
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const cartCount = currentOrder.files.length;
 
   return (
@@ -105,14 +110,14 @@ export default function Home() {
           </div>
           <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
             <Link to="/order"><CategoryPill icon={<Zap size={18} />} label="Instant" active /></Link>
-            <Link to="/order"><CategoryPill icon={<PenTool size={18} />} label="Stationery" /></Link>
+            <button onClick={() => scrollToSection('stationery-store')}><CategoryPill icon={<PenTool size={18} />} label="Stationery" /></button>
             <Link to="/order"><CategoryPill icon={<FileText size={18} />} label="Docs" /></Link>
             <Link to="/order"><CategoryPill icon={<Image size={18} />} label="Posters" /></Link>
           </div>
         </section>
 
         {/* Stationery Items (Replaced Manuals) */}
-        <section className="space-y-4">
+        <section id="stationery-store" className="space-y-4">
           <div className="flex items-center gap-2 text-gray-900 font-bold text-lg px-1">
             <PenTool size={20} /> Stationery Store
           </div>

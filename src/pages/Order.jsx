@@ -15,6 +15,7 @@ export default function Order() {
 
     const total = calculateTotal();
     const hasFiles = currentOrder.files.length > 0;
+    const isAllStationery = hasFiles && currentOrder.files.every(f => f.type === 'stationery');
 
     const handleNext = () => {
         if (step === 1 && hasFiles) setStep(2);
@@ -174,51 +175,53 @@ export default function Order() {
                             exit={{ opacity: 0, x: 20 }}
                             className="space-y-6"
                         >
-                            {/* Settings Cards */}
-                            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="font-medium text-gray-700">Color Mode</span>
-                                    <div className="flex bg-gray-100 p-1 rounded-lg">
-                                        <button
-                                            onClick={() => updateSettings('color', false)}
-                                            className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", !currentOrder.settings.color ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
-                                        >B&W</button>
-                                        <button
-                                            onClick={() => updateSettings('color', true)}
-                                            className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", currentOrder.settings.color ? "bg-white shadow-sm text-purple-600" : "text-gray-500 hover:text-gray-700")}
-                                        >Color</button>
+                            {/* Settings Cards - Hide if only stationery */}
+                            {!isAllStationery && (
+                                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-medium text-gray-700">Color Mode</span>
+                                        <div className="flex bg-gray-100 p-1 rounded-lg">
+                                            <button
+                                                onClick={() => updateSettings('color', false)}
+                                                className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", !currentOrder.settings.color ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
+                                            >B&W</button>
+                                            <button
+                                                onClick={() => updateSettings('color', true)}
+                                                className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", currentOrder.settings.color ? "bg-white shadow-sm text-purple-600" : "text-gray-500 hover:text-gray-700")}
+                                            >Color</button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="flex justify-between items-center">
-                                    <span className="font-medium text-gray-700">Sides</span>
-                                    <div className="flex bg-gray-100 p-1 rounded-lg">
-                                        <button
-                                            onClick={() => updateSettings('doubleSided', false)}
-                                            className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", !currentOrder.settings.doubleSided ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
-                                        >Single</button>
-                                        <button
-                                            onClick={() => updateSettings('doubleSided', true)}
-                                            className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", currentOrder.settings.doubleSided ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
-                                        >Double</button>
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-medium text-gray-700">Sides</span>
+                                        <div className="flex bg-gray-100 p-1 rounded-lg">
+                                            <button
+                                                onClick={() => updateSettings('doubleSided', false)}
+                                                className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", !currentOrder.settings.doubleSided ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
+                                            >Single</button>
+                                            <button
+                                                onClick={() => updateSettings('doubleSided', true)}
+                                                className={clsx("px-4 py-1.5 text-xs font-bold rounded-md transition-all", currentOrder.settings.doubleSided ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
+                                            >Double</button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-                                    <span className="font-medium text-gray-700">Copies</span>
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => updateSettings('copies', Math.max(1, currentOrder.settings.copies - 1))}
-                                            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 transition-colors"
-                                        >-</button>
-                                        <span className="font-bold w-6 text-center text-gray-900">{currentOrder.settings.copies}</span>
-                                        <button
-                                            onClick={() => updateSettings('copies', Math.max(1, currentOrder.settings.copies + 1))}
-                                            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 transition-colors"
-                                        >+</button>
+                                    <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
+                                        <span className="font-medium text-gray-700">Copies</span>
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => updateSettings('copies', Math.max(1, currentOrder.settings.copies - 1))}
+                                                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 transition-colors"
+                                            >-</button>
+                                            <span className="font-bold w-6 text-center text-gray-900">{currentOrder.settings.copies}</span>
+                                            <button
+                                                onClick={() => updateSettings('copies', Math.max(1, currentOrder.settings.copies + 1))}
+                                                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 transition-colors"
+                                            >+</button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Bill Details */}
                             <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-3">

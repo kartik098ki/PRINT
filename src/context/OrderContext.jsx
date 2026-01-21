@@ -91,8 +91,14 @@ export const OrderProvider = ({ children }) => {
 
             // Perform async processing for PDFs
             if (file.type === 'application/pdf') {
-                getPdfPageCount(file).then(count => {
+                // Timeout wrapper for PDF counting
+                const countPromise = getPdfPageCount(file);
+                const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(1), 3000)); // Default to 1 after 3s
+
+                Promise.race([countPromise, timeoutPromise]).then(count => {
                     updateFilePageCount(fileObj.id, count);
+                }).catch(() => {
+                    updateFilePageCount(fileObj.id, 1);
                 });
             }
         };
