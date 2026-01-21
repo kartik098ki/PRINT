@@ -57,18 +57,8 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
-    const getAuthHeaders = () => {
-        if (user && user.token) {
-            return {
-                'Authorization': `Bearer ${user.token}`,
-                'Content-Type': 'application/json'
-            };
-        }
-        return { 'Content-Type': 'application/json' };
-    };
-
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, getAuthHeaders }}>
+        <AuthContext.Provider value={{ user, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );
