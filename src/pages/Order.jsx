@@ -6,7 +6,7 @@ import { useOrder } from '../context/OrderContext';
 import { clsx } from 'clsx';
 
 export default function Order() {
-    const { currentOrder, addFile, removeFile, updateSettings, calculateTotal, placeOrder } = useOrder();
+    const { currentOrder, addFile, removeFile, updateFilePageCount, updateSettings, calculateTotal, placeOrder } = useOrder();
     const navigate = useNavigate();
     const [step, setStep] = useState(1); // 1: Upload, 2: Settings, 3: Success
     const [isProcessing, setIsProcessing] = useState(false);
@@ -110,20 +110,46 @@ export default function Order() {
 
                             <div className="space-y-3">
                                 {currentOrder.files.map((file) => (
-                                    <div key={file.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
-                                            {file.type === 'stationery' ? <PenTool size={20} /> :
-                                                file.type.startsWith('image/') ? <FileImage size={20} /> : <File size={20} />}
+                                    <div key={file.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-3">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
+                                                {file.type === 'stationery' ? <PenTool size={20} /> :
+                                                    file.type.startsWith('image/') ? <FileImage size={20} /> : <File size={20} />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium truncate text-sm text-gray-900">{file.name}</p>
+                                                <p className="text-xs text-gray-400">
+                                                    {file.type === 'stationery' ? `₹${file.price}` : `${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                                                </p>
+                                            </div>
+                                            <button onClick={() => removeFile(file.id)} className="text-gray-400 hover:text-red-500 transition-colors p-2">
+                                                <X size={20} />
+                                            </button>
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium truncate text-sm text-gray-900">{file.name}</p>
-                                            <p className="text-xs text-gray-400">
-                                                {file.type === 'stationery' ? `₹${file.price}` : `${(file.size / 1024 / 1024).toFixed(2)} MB`}
-                                            </p>
-                                        </div>
-                                        <button onClick={() => removeFile(file.id)} className="text-gray-400 hover:text-red-500 transition-colors">
-                                            <X size={20} />
-                                        </button>
+
+                                        {/* Page Count Input */}
+                                        {file.type !== 'stationery' && (
+                                            <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg ml-14">
+                                                <span className="text-xs font-bold text-gray-500 uppercase">Pages in file:</span>
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        onClick={() => updateFilePageCount(file.id, Math.max(1, (file.pageCount || 1) - 1))}
+                                                        className="w-6 h-6 bg-white rounded shadow-sm text-gray-600 flex items-center justify-center font-bold"
+                                                    >-</button>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={file.pageCount || 1}
+                                                        onChange={(e) => updateFilePageCount(file.id, e.target.value)}
+                                                        className="w-10 text-center bg-transparent font-bold text-sm focus:outline-none"
+                                                    />
+                                                    <button
+                                                        onClick={() => updateFilePageCount(file.id, (file.pageCount || 1) + 1)}
+                                                        className="w-6 h-6 bg-white rounded shadow-sm text-gray-600 flex items-center justify-center font-bold"
+                                                    >+</button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                                 {hasFiles && (
@@ -191,12 +217,16 @@ export default function Order() {
                             <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-3">
                                 <h3 className="font-bold text-sm text-gray-900">Bill Details</h3>
                                 <div className="flex justify-between text-sm text-gray-500">
-                                    <span>File Count</span>
-                                    <span>{currentOrder.files.length}</span>
+                                    <span>Total Pages (All files)</span>
+                                    <span>{currentOrder.files.reduce((acc, f) => acc + (f.pageCount || 1), 0)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm text-gray-500">
                                     <span>Rate per page</span>
                                     <span>₹{currentOrder.settings.color ? '10' : '2'}</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-gray-500">
+                                    <span>Copies</span>
+                                    <span>{currentOrder.settings.copies}</span>
                                 </div>
                                 <div className="border-t border-dashed border-gray-200 my-2"></div>
                                 <div className="flex justify-between font-bold text-lg text-gray-900">

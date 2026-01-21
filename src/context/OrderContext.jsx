@@ -74,6 +74,7 @@ export const OrderProvider = ({ children }) => {
                 size: file.size,
                 previewUrl: null, // Could use reader.result for preview too
                 dataVal: reader.result, // Base64 Data URL
+                pageCount: 1, // Default to 1 page
                 timestamp: Date.now()
             };
             setCurrentOrder(prev => ({
@@ -110,6 +111,13 @@ export const OrderProvider = ({ children }) => {
         }));
     };
 
+    const updateFilePageCount = (fileId, count) => {
+        setCurrentOrder(prev => ({
+            ...prev,
+            files: prev.files.map(f => f.id === fileId ? { ...f, pageCount: Math.max(1, parseInt(count) || 1) } : f)
+        }));
+    };
+
     const updateSettings = (key, value) => {
         setCurrentOrder(prev => ({
             ...prev,
@@ -121,10 +129,10 @@ export const OrderProvider = ({ children }) => {
         setIsProcessingPayment(true);
 
         const filesData = currentOrder.files.map(f => ({
-            id: f.id,
             name: f.name,
             size: f.size,
             type: f.type,
+            pageCount: f.pageCount,
             dataVal: f.dataVal // Send the actual content
         }));
 
@@ -179,7 +187,9 @@ export const OrderProvider = ({ children }) => {
         const printFiles = currentOrder.files.filter(f => f.type !== 'stationery');
         if (printFiles.length > 0) {
             const baseRate = currentOrder.settings.color ? 10 : 2;
-            total += printFiles.length * currentOrder.settings.copies * baseRate;
+            // Total = (Sum of all pages across all files) * Copies * Rate
+            const totalPages = printFiles.reduce((acc, file) => acc + (file.pageCount || 1), 0);
+            total += totalPages * currentOrder.settings.copies * baseRate;
         }
         const stationeryItems = currentOrder.files.filter(f => f.type === 'stationery');
         stationeryItems.forEach(item => {
@@ -229,6 +239,7 @@ export const OrderProvider = ({ children }) => {
             addFile,
             addStationeryItem,
             removeFile,
+            updateFilePageCount,
             updateSettings,
             placeOrder,
             calculateTotal,
