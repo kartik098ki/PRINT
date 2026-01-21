@@ -37,7 +37,7 @@ export default function Order() {
             setDebugError(`CRITICAL ERROR: ${e.message}\n\nSTACK: ${e.stack}`);
             alert(`CRITICAL ERROR:\n\n${e.message}\n\nSee screen for details.`);
         } finally {
-            setIsProcessingPayment(false);
+            setIsProcessing(false);
         }
     };
 
