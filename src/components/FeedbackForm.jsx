@@ -41,11 +41,12 @@ export default function FeedbackForm() {
                 setRating(0);
                 setFeedback('');
             } else {
-                throw new Error('Failed to submit feedback');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to submit feedback');
             }
         } catch (error) {
             console.error('Feedback error:', error);
-            addToast('Something went wrong. Please try again.', 'error');
+            addToast(error.message || 'Something went wrong. Please try again.', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -70,8 +71,8 @@ export default function FeedbackForm() {
                             <Star
                                 size={32}
                                 className={`transition-colors ${star <= rating
-                                        ? 'text-yellow-400 fill-yellow-400'
-                                        : 'text-gray-200 fill-gray-100'
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-200 fill-gray-100'
                                     }`}
                             />
                         </button>
