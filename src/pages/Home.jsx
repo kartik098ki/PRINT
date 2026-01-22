@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
 import { useOrder } from '../context/OrderContext';
+import FeedbackForm from '../components/FeedbackForm';
 
 export default function Home() {
   const { user } = useAuth();
@@ -162,6 +163,8 @@ export default function Home() {
             </button>
           </div>
         )}
+
+        <FeedbackForm />
 
         {/* Support Banner */}
         <div className="bg-gray-900 rounded-2xl p-6 text-white text-center relative overflow-hidden">
