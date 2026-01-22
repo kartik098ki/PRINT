@@ -92,8 +92,8 @@ function OrderCard({ order, active }) {
                     </div>
                     <div>
                         <h3 className="font-bold text-gray-900 text-sm">Order #{order.id.slice(-4)}</h3>
-                        <p className="text-xs text-gray-500 font-medium">
-                            {new Date(order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt).toLocaleString()}
+                        <p className="text-xs text-gray-500 font-medium mb-3 flex items-center gap-2">
+                            <Clock size={12} /> {new Date(order.created_at).toLocaleString()}
                         </p>
                     </div>
                 </div>

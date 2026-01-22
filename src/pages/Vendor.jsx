@@ -382,7 +382,7 @@ function OrderCard({ order, onPrint, onCollect }) {
                             </span>
                         </div>
                         <p className="text-xs text-gray-500 font-medium mb-3 flex items-center gap-2">
-                            <Clock size={12} /> {new Date(order.createdAt).toLocaleString()}
+                            <Clock size={12} /> {new Date(order.created_at).toLocaleString()}
                             <span className="w-1 h-1 bg-gray-300 rounded-full" />
                             <span className="text-green-600 font-bold">Paid ₹{order.totalAmount}</span>
                         </p>

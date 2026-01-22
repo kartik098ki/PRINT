@@ -213,15 +213,14 @@ app.post('/api/orders', async (req, res) => {
 });
 
 // 5. UPDATE ORDER STATUS (Vendor Actions)
-// Note: Changed from /api/orders/:id/status to /api/orders/:id to match old backend if necessary.
-// But wait, the frontend is calling /api/orders/:id/status.
-// I should Support BOTH or keep the new path style.
-// The old backend expected PATCH /api/orders/:id
-// My new OrderContext calls PATCH /api/orders/:id/status
-// I MUST update this route to match the NEW frontend code, otherwise it will break.
-app.patch('/api/orders/:id/status', async (req, res) => {
+// Supports both PATCH /api/orders/:id and PATCH /api/orders/:id/status
+app.patch(['/api/orders/:id', '/api/orders/:id/status'], async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
+
+    if (!status) {
+        return res.status(400).json({ error: 'Status is required' });
+    }
 
     const sql = `UPDATE orders SET status = ? WHERE id = ?`;
     try {

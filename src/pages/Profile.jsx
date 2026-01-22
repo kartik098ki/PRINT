@@ -114,7 +114,7 @@ export default function Profile() {
                                             <h4 className="font-bold text-gray-900 text-sm">Print Order</h4>
                                             <span className="font-bold text-sm">₹{order.totalAmount}</span>
                                         </div>
-                                        <p className="text-xs text-gray-500 mb-2">{new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {order.files.length} Item(s)</p>
+                                        <p className="text-xs text-gray-500 mb-2">{new Date(order.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {order.files.length} Item(s)</p>
 
                                         <div className="flex items-center gap-2">
                                             {order.status !== 'collected' && (
